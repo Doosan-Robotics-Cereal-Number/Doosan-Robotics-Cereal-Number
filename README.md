@@ -62,7 +62,7 @@ type/num
 
 ### 브랜치 생성 예시
 
-- Task 번호: `DSL-1`
+- Task 번호: `CEREAL-1`
 - 작업 내용: 주문 기능 구현인 경우 아래와 같은 형태로 자유롭게 브랜치 네이밍
 
 ```
@@ -84,11 +84,11 @@ type : (task) subject
 
 ### 커밋 예시
 
-- Task 번호: `DSL-1`
+- Task 번호: `CEREAL-1`
 - 작업 내용: 주문 기능 구현
 
 ```
-feat : (DSL-1) 주문 기능 구현
+feat : (CEREAL-1) 주문 기능 구현
 
 - xxxxx
 ```
