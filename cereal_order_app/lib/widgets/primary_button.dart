@@ -20,12 +20,12 @@ class PrimaryButton extends StatelessWidget {
     return Center(
       child: SizedBox(
         width: 800,
-        height: 64,
+        height: 120,
         child: ElevatedButton(
           onPressed: isEnabled ? onPressed : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: isEnabled
-                ? const Color(0xFF0095FF)
+                ? const Color(0xFF0064FF)
                 : Colors.grey,
             foregroundColor: Colors.white,
             padding: EdgeInsets.symmetric(

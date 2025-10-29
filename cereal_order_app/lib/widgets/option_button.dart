@@ -23,14 +23,14 @@ class OptionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: isSelected
-              ? const Color(0xFF0095FF)
+              ? const Color(0xFF0064FF)
               : Colors.black,
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(
               color: isSelected
-                  ? const Color(0xFF0095FF)
+                  ? const Color(0xFF0064FF)
                   : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
             ),

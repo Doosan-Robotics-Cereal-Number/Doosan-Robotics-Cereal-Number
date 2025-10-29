@@ -165,6 +165,96 @@ class ROS2StatusService implements StatusService {
     _isConnected = false;
     _connectionStreamController.add(false);
   }
+
+  // ============================================
+  // 토픽 발행 메서드 (앱 → 로봇)
+  // ============================================
+  
+  /// Int32 타입 토픽 발행
+  Future<bool> publishInt32(String topic, int value) async {
+    if (_channel == null || !_isConnected) {
+      print('[ROS2] 발행 실패: 연결되지 않음');
+      return false;
+    }
+
+    try {
+      final publishMessage = jsonEncode({
+        'op': 'publish',
+        'topic': topic,
+        'msg': {
+          'data': value,
+        },
+      });
+
+      _channel!.sink.add(publishMessage);
+      print('[ROS2] 토픽 발행 성공: $topic = $value');
+      return true;
+    } catch (e) {
+      print('[ROS2] 토픽 발행 실패: $e');
+      return false;
+    }
+  }
+
+  /// String 타입 토픽 발행
+  Future<bool> publishString(String topic, String value) async {
+    if (_channel == null || !_isConnected) {
+      print('[ROS2] 발행 실패: 연결되지 않음');
+      return false;
+    }
+
+    try {
+      final publishMessage = jsonEncode({
+        'op': 'publish',
+        'topic': topic,
+        'msg': {
+          'data': value,
+        },
+      });
+
+      _channel!.sink.add(publishMessage);
+      print('[ROS2] 토픽 발행 성공: $topic = "$value"');
+      return true;
+    } catch (e) {
+      print('[ROS2] 토픽 발행 실패: $e');
+      return false;
+    }
+  }
+
+  /// 주문 정보 발행 (편의 메서드)
+  @override
+  Future<void> publishOrderInfo({
+    required int userCup,
+    required String orderDetail,
+  }) async {
+    // 먼저 토픽 광고 (advertise)
+    await _advertiseTopic('/user_cup', 'std_msgs/Int32');
+    await _advertiseTopic('/order_detail', 'std_msgs/String');
+    
+    // 짧은 딜레이 후 발행 (rosbridge가 토픽을 등록할 시간)
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // 토픽 발행
+    await publishInt32('/user_cup', userCup);
+    await publishString('/order_detail', orderDetail);
+  }
+
+  /// 토픽 광고 (토픽을 발행할 것임을 rosbridge에 알림)
+  Future<void> _advertiseTopic(String topic, String type) async {
+    if (_channel == null || !_isConnected) return;
+
+    try {
+      final advertiseMessage = jsonEncode({
+        'op': 'advertise',
+        'topic': topic,
+        'type': type,
+      });
+
+      _channel!.sink.add(advertiseMessage);
+      print('[ROS2] 토픽 광고: $topic (타입: $type)');
+    } catch (e) {
+      print('[ROS2] 토픽 광고 실패: $e');
+    }
+  }
 }
 
 

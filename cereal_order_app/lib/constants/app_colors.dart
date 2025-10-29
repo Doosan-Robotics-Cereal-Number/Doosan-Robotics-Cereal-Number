@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// 앱에서 사용되는 색상 정의
 class AppColors {
   // 프라이머리 컬러
-  static const Color primary = Color(0xFF0095FF);
+  static const Color primary = Color(0xFF0064FF);
   
   // 배경 컬러
   static const Color background = Color(0xFFF5F5F5);

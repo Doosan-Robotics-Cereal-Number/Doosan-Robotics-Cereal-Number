@@ -74,7 +74,7 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 30.0),
@@ -114,7 +114,7 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
                               widthFactor: _progressAnimation.value,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF007BFF),
+                                  color: const Color(0xFF0064FF),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),

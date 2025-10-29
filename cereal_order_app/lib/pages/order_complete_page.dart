@@ -10,14 +10,29 @@ class OrderCompletePage extends StatefulWidget {
 
 class _OrderCompletePageState extends State<OrderCompletePage> {
   OrderData? orderData;
+  int remainingSeconds = 5;
 
   @override
   void initState() {
     super.initState();
     
-    // 5초 후 자동으로 첫 화면으로 돌아가기
-    Future.delayed(const Duration(seconds: 5), () {
+    // 3초 카운트다운 시작
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
+        setState(() {
+          remainingSeconds--;
+        });
+        return remainingSeconds > 0;
+      }
+      return false;
+    }).then((_) {
+      if (mounted) {
+        // 3초 후 자동으로 첫 화면으로 돌아가기
         Navigator.pushNamedAndRemoveUntil(
           context, 
           '/', 
@@ -33,10 +48,8 @@ class _OrderCompletePageState extends State<OrderCompletePage> {
     orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
     
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF2F4F6),
-        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -47,19 +60,19 @@ class _OrderCompletePageState extends State<OrderCompletePage> {
                 const Text(
                   '시리얼이 준비되었어요!',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4D4D4D),
+                    color: Color(0xFF333333),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 // 보조 메시지
                 const Text(
                   '픽업대에서 받아주세요.',
                   style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black,
+                    fontSize: 24,
+                    color: Color(0xFF666666),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -111,34 +124,32 @@ class _OrderCompletePageState extends State<OrderCompletePage> {
                 //   ),
                 // 처음으로 버튼
                 Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      // 첫 화면으로 돌아가기
-                      Navigator.pushNamedAndRemoveUntil(
-                        context, 
-                        '/', 
-                        (route) => false,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFFDCDCDC),
-                          width: 1,
+                  child: SizedBox(
+                    width: 800,
+                    height: 120,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // 첫 화면으로 돌아가기
+                        Navigator.pushNamedAndRemoveUntil(
+                          context, 
+                          '/', 
+                          (route) => false,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0064FF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        elevation: 0,
                       ),
-                      child: const Text(
-                        '처음으로',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF666666),
+                      child: Text(
+                        '$remainingSeconds초 후에 주문 시작 화면으로 넘어가요.',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

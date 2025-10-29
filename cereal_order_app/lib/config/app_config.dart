@@ -18,8 +18,17 @@ class AppConfig {
   // ============================================
   
   static const String ros2ServerUrl = 'ws://localhost:9090';
+  
+  // 구독할 토픽 (로봇 → 앱)
   static const String ros2TopicName = '/robot/status';
   static const String ros2TopicType = 'std_msgs/Int32';
+  
+  // 발행할 토픽 (앱 → 로봇)
+  static const String userCupTopicName = '/user_cup';
+  static const String userCupTopicType = 'std_msgs/Int32';
+  
+  static const String orderDetailTopicName = '/order_detail';
+  static const String orderDetailTopicType = 'std_msgs/String';
   
   // ============================================
   // 기타 설정

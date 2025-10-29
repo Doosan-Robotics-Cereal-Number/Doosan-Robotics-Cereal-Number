@@ -27,10 +27,10 @@ class SelectionPageLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       appBar: showAppBar
           ? AppBar(
-              backgroundColor: const Color(0xFFF5F5F5),
+              backgroundColor: Colors.white,
               elevation: 0,
               leading: Container(
                 margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),

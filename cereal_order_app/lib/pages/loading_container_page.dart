@@ -30,11 +30,25 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
   
   bool _isConnected = false;
   String _serviceTypeName = '';
+  bool _orderPublished = false;  // 주문 정보 발행 여부
 
   @override
   void initState() {
     super.initState();
     _initializeService();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 주문 정보 가져오기
+    orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
+    
+    // 주문 정보 발행 (한 번만)
+    if (!_orderPublished && orderData != null) {
+      _publishOrderToRobot();
+      _orderPublished = true;
+    }
   }
 
   /// 서비스 초기화
@@ -64,6 +78,11 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
         if (AppConfig.showConnectionStatus) {
           if (connected) {
             _showSnackBar('✅ $_serviceTypeName 연결됨', Colors.green);
+            // 연결되면 주문 정보 발행
+            if (!_orderPublished && orderData != null) {
+              _publishOrderToRobot();
+              _orderPublished = true;
+            }
           } else {
             _showSnackBar('⚠️ $_serviceTypeName 연결 끊김', Colors.orange);
           }
@@ -83,6 +102,43 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
         _notifyMonitoringApp(newStatus);
       }
     });
+  }
+
+  /// 주문 정보를 로봇에 발행
+  Future<void> _publishOrderToRobot() async {
+    if (orderData == null) return;
+
+    // 1. user_cup 변환 (Int)
+    int userCup = 0;  // 기본값: 매장 컵
+    if (orderData!.selectedCup == 'personal') {
+      userCup = 1;  // 개인 컵
+    }
+
+    // 2. order_detail 생성 (String)
+    String cerealType = orderData!.selectedCereal ?? 'cocoball';
+    String quantity = orderData!.selectedQuantity ?? '적당히';
+    
+    // 양 변환 (한글 → 영문)
+    String quantityEn = 'normal';  // 기본값
+    if (quantity == '많이') {
+      quantityEn = 'many';
+    } else if (quantity == '적게') {
+      quantityEn = 'small';
+    }
+    
+    String orderDetail = '$cerealType,$quantityEn';
+
+    // 3. 로봇에 발행
+    print('📤 주문 정보 발행 시작:');
+    print('  - user_cup: $userCup (${orderData!.selectedCup})');
+    print('  - order_detail: $orderDetail');
+
+    await _statusService.publishOrderInfo(
+      userCup: userCup,
+      orderDetail: orderDetail,
+    );
+
+    print('✅ 주문 정보 발행 완료!');
   }
 
   @override

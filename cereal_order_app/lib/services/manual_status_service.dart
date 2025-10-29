@@ -56,6 +56,17 @@ class ManualStatusService implements StatusService {
 
   /// 현재 상태 조회
   int get currentStatus => _currentStatus;
+  
+  /// 주문 정보 발행 (수동 모드에서는 로그만 출력)
+  @override
+  Future<void> publishOrderInfo({
+    required int userCup,
+    required String orderDetail,
+  }) async {
+    print('[Manual] 주문 정보 (로그만 출력):');
+    print('  - user_cup: $userCup');
+    print('  - order_detail: $orderDetail');
+  }
 }
 
 

@@ -20,6 +20,15 @@ abstract class StatusService {
   
   /// 현재 연결 상태
   bool get isConnected;
+  
+  /// 주문 정보를 로봇에 전송 (ROS2 모드에서만 동작)
+  Future<void> publishOrderInfo({
+    required int userCup,
+    required String orderDetail,
+  }) async {
+    // 기본 구현: 아무것도 하지 않음 (ManualStatusService에서 사용)
+    print('[StatusService] publishOrderInfo 기본 구현 (발행 안 함)');
+  }
 }
 
 
