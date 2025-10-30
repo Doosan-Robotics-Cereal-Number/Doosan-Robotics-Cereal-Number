@@ -8,7 +8,7 @@ class AppConfig {
   
   /// 현재 사용할 상태 서비스 타입
   static const StatusServiceType currentServiceType = 
-      StatusServiceType.manual;  // 👈 manual 또는 ros2로 변경
+      StatusServiceType.ros2;  // manual 또는 ros2로 변경
   
   /// 디버그 모드 (true면 테스트 버튼 표시)
   static const bool debugMode = true;
