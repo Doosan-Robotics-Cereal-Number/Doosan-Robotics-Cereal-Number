@@ -9,6 +9,9 @@ abstract class StatusService {
   /// 연결 상태 스트림 (연결됨/끊김)
   Stream<bool> get connectionStream;
   
+  /// 주문 완료 스트림 (true: 완료)
+  Stream<bool> get orderDoneStream;
+  
   /// 서비스 시작
   Future<void> start();
   
@@ -22,12 +25,13 @@ abstract class StatusService {
   bool get isConnected;
   
   /// 주문 정보를 로봇에 전송 (ROS2 모드에서만 동작)
+  /// orderData 형식: "start_sequence_a,medium,store" (CSV)
   Future<void> publishOrderInfo({
-    required int userCup,
-    required String orderDetail,
+    required String orderData,
   }) async {
     // 기본 구현: 아무것도 하지 않음 (ManualStatusService에서 사용)
     print('[StatusService] publishOrderInfo 기본 구현 (발행 안 함)');
+    print('  - orderData: $orderData');
   }
 }
 

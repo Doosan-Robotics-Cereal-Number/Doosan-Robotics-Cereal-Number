@@ -10,7 +10,7 @@ class QuantitySelectionPage extends StatefulWidget {
 }
 
 class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
-  String? selectedQuantity = '적당히'; // 기본값으로 적당히 선택
+  String? selectedQuantity = '보통'; // 기본값으로 적당히 선택
   OrderData? orderData;
 
   @override
@@ -19,7 +19,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
     // 다음 프레임에서 orderData 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
-        orderData?.selectedQuantity = '적당히';
+        orderData?.selectedQuantity = '보통';
       });
     });
   }
@@ -31,7 +31,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
     
     // 첫 빌드에서 orderData가 있으면 기본값 설정
     if (orderData != null && orderData!.selectedQuantity == null) {
-      orderData!.selectedQuantity = '적당히';
+      orderData!.selectedQuantity = '보통';
     }
     
     return SelectionPageLayout(
@@ -43,7 +43,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
       onConfirmPressed: () {
         Navigator.pushNamed(
           context,
-          '/loading',
+          '/cup-selection',
           arguments: orderData,
         );
       },
@@ -69,11 +69,11 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
             label: '적당히',
             grams: '(30g)',
             imagePath: 'assets/images/normal-cereal.png',
-            isSelected: selectedQuantity == '적당히',
+            isSelected: selectedQuantity == '보통',
             onTap: () {
               setState(() {
-                selectedQuantity = '적당히';
-                orderData?.selectedQuantity = '적당히';
+                selectedQuantity = '보통';
+                orderData?.selectedQuantity = '보통';
               });
             },
           ),

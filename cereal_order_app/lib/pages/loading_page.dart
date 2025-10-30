@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/order_data.dart';
+import '../services/status_service.dart';
+import '../config/app_config.dart';
 
 class LoadingPage extends StatefulWidget {
   final OrderData? orderData;
+  final StatusService statusService;
   
   const LoadingPage({
     super.key,
     this.orderData,
+    required this.statusService,
   });
 
   @override
@@ -17,6 +21,7 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
   late AnimationController _progressController;
   late Animation<double> _progressAnimation;
   int remainingSeconds = 3;
+  bool _orderPublished = false;
 
   @override
   void initState() {
@@ -36,11 +41,71 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
       curve: Curves.easeInOut,
     ));
 
+    // 주문 정보 발행
+    _publishOrderToRobot();
+
     // 3초 타이머 시작
     _startCountdown();
     
     // 프로그레스바 애니메이션 시작
     _progressController.forward();
+  }
+
+  /// 주문 정보를 로봇에 발행
+  Future<void> _publishOrderToRobot() async {
+    if (_orderPublished || widget.orderData == null) return;
+    
+    _orderPublished = true;
+
+    // 1. 시리얼 종류 (이미 영어: start_sequence_a 또는 start_sequence_b)
+    String cerealType = widget.orderData!.selectedCereal ?? 'start_sequence_a';
+    
+    // 2. 양 매핑 (한글 → 영어)
+    String quantityKr = widget.orderData!.selectedQuantity ?? '보통';
+    String quantity = 'medium';  // 기본값
+    
+    switch (quantityKr) {
+      case '많이':
+        quantity = 'large';
+        break;
+      case '보통':
+        quantity = 'medium';
+        break;
+      case '적게':
+        quantity = 'small';
+        break;
+    }
+    
+    // 3. 컵 타입 매핑 (한글 → 영어)
+    String cupTypeKr = widget.orderData!.selectedCup ?? '매장컵';
+    String cupType = 'store';  // 기본값
+    
+    if (cupTypeKr == '개인컵') {
+      cupType = 'personal';
+    } else if (cupTypeKr == '매장컵') {
+      cupType = 'store';
+    }
+
+    // 4. CSV 형식으로 결합 (쉼표로 구분)
+    String orderDataStr = '$cerealType,$quantity,$cupType';
+
+    // 5. 로봇에 발행
+    print('');
+    print('═══════════════════════════════════════════════════');
+    print('📤 [주문 토픽 전송] LoadingPage에서 발행 시작');
+    print('═══════════════════════════════════════════════════');
+    print('🎯 토픽명: ${AppConfig.orderTopicName}');
+    print('📦 원본 데이터:');
+    print('   - 시리얼: $cerealType ($quantityKr)');
+    print('   - 양: $quantity ($quantityKr)');
+    print('   - 컵: $cupType ($cupTypeKr)');
+    print('📨 전송 데이터: "$orderDataStr"');
+    print('═══════════════════════════════════════════════════');
+
+    await widget.statusService.publishOrderInfo(orderData: orderDataStr);
+
+    print('✅ [주문 토픽 전송] 발행 완료!');
+    print('');
   }
 
   void _startCountdown() {
@@ -53,16 +118,9 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
         return remainingSeconds > 0;
       }
       return false;
-    }).then((_) {
-      if (mounted) {
-        // 3초 후 주문 완료 화면으로 이동
-        Navigator.pushNamed(
-          context, 
-          '/order-complete',
-          arguments: widget.orderData,
-        );
-      }
     });
+    // 타이머는 동작하지만 자동으로 페이지 이동하지 않음
+    // ROS2의 order_done 토픽을 받아야 페이지 이동
   }
 
   @override
