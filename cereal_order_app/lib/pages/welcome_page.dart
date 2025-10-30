@@ -34,7 +34,7 @@ class WelcomePage extends StatelessWidget {
                       height: 100,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/cup-selection');
+                          Navigator.pushNamed(context, '/cereal-selection');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0064FF),

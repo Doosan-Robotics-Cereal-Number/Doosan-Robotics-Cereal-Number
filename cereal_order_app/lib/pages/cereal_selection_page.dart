@@ -10,7 +10,7 @@ class CerealSelectionPage extends StatefulWidget {
 }
 
 class _CerealSelectionPageState extends State<CerealSelectionPage> {
-  String? selectedCereal = 'cocoball'; // 기본값으로 코코볼 선택
+  String? selectedCereal = 'start_sequence_a'; // 기본값으로 코코볼 선택
   OrderData? orderData;
 
   @override
@@ -19,7 +19,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
     // 다음 프레임에서 orderData 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
-        orderData?.selectedCereal = 'cocoball';
+        orderData?.selectedCereal = 'start_sequence_a';
       });
     });
   }
@@ -31,7 +31,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
     
     // 첫 빌드에서 orderData가 있으면 기본값 설정
     if (orderData != null && orderData!.selectedCereal == null) {
-      orderData!.selectedCereal = 'cocoball';
+      orderData!.selectedCereal = 'start_sequence_a';
     }
     
     return SelectionPageLayout(
@@ -54,8 +54,8 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
           GestureDetector(
             onTap: () {
               setState(() {
-                selectedCereal = 'cocoball';
-                orderData?.selectedCereal = 'cocoball';
+                selectedCereal = 'start_sequence_a';
+                orderData?.selectedCereal = 'start_sequence_a';
               });
             },
             child: Column(
@@ -67,7 +67,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: selectedCereal == 'cocoball'
+                      color: selectedCereal == 'start_sequence_a'
                           ? const Color(0xFF0064FF)
                           : const Color(0xFFF1F1F1),
                       width: 3,
@@ -121,8 +121,8 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
           GestureDetector(
             onTap: () {
               setState(() {
-                selectedCereal = 'granola';
-                orderData?.selectedCereal = 'granola';
+                selectedCereal = 'start_sequence_b';
+                orderData?.selectedCereal = 'start_sequence_b';
               });
             },
             child: Column(
@@ -134,7 +134,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: selectedCereal == 'granola'
+                      color: selectedCereal == 'start_sequence_b'
                           ? const Color(0xFF0064FF)
                           : const Color(0xFFF1F1F1),
                       width: 3,

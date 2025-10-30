@@ -23,12 +23,13 @@ class AppConfig {
   static const String ros2TopicName = '/robot/status';
   static const String ros2TopicType = 'std_msgs/Int32';
   
-  // 발행할 토픽 (앱 → 로봇)
-  static const String userCupTopicName = '/user_cup';
-  static const String userCupTopicType = 'std_msgs/Int32';
+  // 주문 완료 토픽 (로봇 → 앱)
+  static const String orderDoneTopicName = '/dsr01/kiosk/order_done';
+  static const String orderDoneTopicType = 'std_msgs/String';
   
-  static const String orderDetailTopicName = '/order_detail';
-  static const String orderDetailTopicType = 'std_msgs/String';
+  // 발행할 토픽 (앱 → 로봇) - 주문 정보
+  static const String orderTopicName = '/dsr01/kiosk/order';
+  static const String orderTopicType = 'std_msgs/String';
   
   // ============================================
   // 기타 설정

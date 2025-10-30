@@ -10,27 +10,40 @@ class CupSelectionPage extends StatefulWidget {
 }
 
 class _CupSelectionPageState extends State<CupSelectionPage> {
-  String? selectedCup = 'store'; // 기본값으로 매장 컵 선택
-  final OrderData orderData = OrderData();
+  String? selectedCup = '매장컵'; // 기본값으로 매장 컵 선택
+  OrderData? orderData;
 
   @override
   void initState() {
     super.initState();
-    orderData.selectedCup = 'store';
+    // 다음 프레임에서 orderData 설정
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        orderData?.selectedCup = '매장컵';
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // 이전 화면에서 전달받은 주문 데이터 가져오기
+    orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
+    
+    // 첫 빌드에서 orderData가 있으면 기본값 설정
+    if (orderData != null && orderData!.selectedCup == null) {
+      orderData!.selectedCup = '매장컵';
+    }
+    
     return SelectionPageLayout(
       title: '어떤 컵에 담아드릴까요?',
-      backButtonText: '처음으로',
+      backButtonText: '뒤로가기',
       confirmButtonText: '컵 선택하기',
       isConfirmEnabled: selectedCup != null,
       showAppBar: false,
       onConfirmPressed: () {
         Navigator.pushNamed(
           context,
-          '/cereal-selection',
+          '/loading',
           arguments: orderData,
         );
       },
@@ -41,8 +54,8 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
           GestureDetector(
             onTap: () {
               setState(() {
-                selectedCup = 'store';
-                orderData.selectedCup = 'store';
+                selectedCup = '매장컵';
+                orderData?.selectedCup = '매장컵';
               });
             },
             child: Column(
@@ -54,7 +67,7 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: selectedCup == 'store'
+                      color: selectedCup == '매장컵'
                           ? const Color(0xFF0064FF)
                           : const Color(0xFFF1F1F1),
                       width: 3,
@@ -108,8 +121,8 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
           GestureDetector(
             onTap: () {
               setState(() {
-                selectedCup = 'personal';
-                orderData.selectedCup = 'personal';
+                selectedCup = '개인컵';
+                orderData?.selectedCup = '개인컵';
               });
             },
             child: Column(
@@ -121,7 +134,7 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: selectedCup == 'personal'
+                      color: selectedCup == '개인컵'
                           ? const Color(0xFF0064FF)
                           : const Color(0xFFF1F1F1),
                       width: 3,

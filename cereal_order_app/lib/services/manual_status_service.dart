@@ -6,6 +6,7 @@ import 'status_service.dart';
 class ManualStatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
+  final _orderDoneStreamController = StreamController<bool>.broadcast();
   
   int _currentStatus = 0;
   bool _isActive = false;
@@ -15,6 +16,9 @@ class ManualStatusService implements StatusService {
 
   @override
   Stream<bool> get connectionStream => _connectionStreamController.stream;
+
+  @override
+  Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
 
   @override
   Future<void> start() async {
@@ -37,6 +41,7 @@ class ManualStatusService implements StatusService {
   void dispose() {
     _statusStreamController.close();
     _connectionStreamController.close();
+    _orderDoneStreamController.close();
   }
 
   @override
@@ -56,16 +61,25 @@ class ManualStatusService implements StatusService {
 
   /// 현재 상태 조회
   int get currentStatus => _currentStatus;
+
+  /// 수동으로 주문 완료 트리거
+  void triggerOrderDone() {
+    if (!_isActive) {
+      print('[Manual] 서비스가 시작되지 않았습니다');
+      return;
+    }
+    
+    print('[Manual] 주문 완료 트리거');
+    _orderDoneStreamController.add(true);
+  }
   
   /// 주문 정보 발행 (수동 모드에서는 로그만 출력)
   @override
   Future<void> publishOrderInfo({
-    required int userCup,
-    required String orderDetail,
+    required String orderData,
   }) async {
     print('[Manual] 주문 정보 (로그만 출력):');
-    print('  - user_cup: $userCup');
-    print('  - order_detail: $orderDetail');
+    print('  - orderData: "$orderData"');
   }
 }
 
