@@ -129,6 +129,7 @@ class _OrderCompletePageState extends State<OrderCompletePage> {
                     height: 120,
                     child: ElevatedButton(
                       onPressed: () {
+                        print('[OrderCompletePage] 처음으로 버튼 클릭됨');
                         // 첫 화면으로 돌아가기
                         Navigator.pushNamedAndRemoveUntil(
                           context, 

@@ -41,11 +41,16 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
       isConfirmEnabled: selectedCereal != null,
       showAppBar: false,
       onConfirmPressed: () {
+        print('[CerealSelectionPage] 메뉴 선택하기 버튼 클릭됨');
         Navigator.pushNamed(
           context,
           '/quantity-selection',
           arguments: orderData,
         );
+      },
+      onBackPressed: () {
+        print('[CerealSelectionPage] 뒤로가기 버튼 클릭됨');
+        Navigator.pop(context);
       },
       contentArea: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -53,6 +58,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
           // 코코볼 옵션
           GestureDetector(
             onTap: () {
+              print('[CerealSelectionPage] 코코볼 선택됨');
               setState(() {
                 selectedCereal = 'start_sequence_a';
                 orderData?.selectedCereal = 'start_sequence_a';
@@ -120,6 +126,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
           // 그래놀라 옵션
           GestureDetector(
             onTap: () {
+              print('[CerealSelectionPage] 그래놀라 선택됨');
               setState(() {
                 selectedCereal = 'start_sequence_b';
                 orderData?.selectedCereal = 'start_sequence_b';

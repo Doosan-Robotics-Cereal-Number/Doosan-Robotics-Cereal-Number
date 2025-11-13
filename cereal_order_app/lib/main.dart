@@ -5,6 +5,7 @@ import 'pages/cup_selection_page.dart';
 import 'pages/quantity_selection_page.dart';
 import 'pages/loading_container_page.dart';
 import 'pages/order_complete_page.dart';
+import 'pages/voice_order_page.dart';
 
 void main() {
   runApp(const CerealOrderApp());
@@ -29,6 +30,7 @@ class CerealOrderApp extends StatelessWidget {
         '/quantity-selection': (context) => const QuantitySelectionPage(),
         '/loading': (context) => const LoadingContainerPage(),
         '/order-complete': (context) => const OrderCompletePage(),
+        '/voice-order': (context) => const VoiceOrderPage(),
       },
     );
   }

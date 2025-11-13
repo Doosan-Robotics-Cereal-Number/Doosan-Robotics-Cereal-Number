@@ -41,11 +41,16 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
       isConfirmEnabled: selectedCup != null,
       showAppBar: false,
       onConfirmPressed: () {
+        print('[CupSelectionPage] 컵 선택하기 버튼 클릭됨');
         Navigator.pushNamed(
           context,
           '/loading',
           arguments: orderData,
         );
+      },
+      onBackPressed: () {
+        print('[CupSelectionPage] 뒤로가기 버튼 클릭됨');
+        Navigator.pop(context);
       },
       contentArea: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -53,6 +58,7 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
           // 매장 컵 옵션
           GestureDetector(
             onTap: () {
+              print('[CupSelectionPage] 매장 컵 선택됨');
               setState(() {
                 selectedCup = '매장컵';
                 orderData?.selectedCup = '매장컵';
@@ -120,6 +126,7 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
           // 개인 컵 옵션
           GestureDetector(
             onTap: () {
+              print('[CupSelectionPage] 개인 컵 선택됨');
               setState(() {
                 selectedCup = '개인컵';
                 orderData?.selectedCup = '개인컵';

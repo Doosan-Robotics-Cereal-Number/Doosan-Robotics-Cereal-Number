@@ -14,6 +14,10 @@ class ROS2StatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
+<<<<<<< HEAD
+=======
+  final _voiceOrderStartStreamController = StreamController<String>.broadcast();
+>>>>>>> feat/16_voice_order_llm_ui
   
   // 설정값
   String _serverUrl;
@@ -44,6 +48,12 @@ class ROS2StatusService implements StatusService {
   Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
 
   @override
+<<<<<<< HEAD
+=======
+  Stream<String> get voiceOrderStartStream => _voiceOrderStartStreamController.stream;
+
+  @override
+>>>>>>> feat/16_voice_order_llm_ui
   Future<void> start() async {
     print('[ROS2] WebSocket 연결 시작: $_serverUrl');
     await _connect();
@@ -61,6 +71,10 @@ class ROS2StatusService implements StatusService {
     _statusStreamController.close();
     _connectionStreamController.close();
     _orderDoneStreamController.close();
+<<<<<<< HEAD
+=======
+    _voiceOrderStartStreamController.close();
+>>>>>>> feat/16_voice_order_llm_ui
   }
 
   @override
@@ -82,8 +96,21 @@ class ROS2StatusService implements StatusService {
     try {
       print('[ROS2] WebSocket 연결 시도 중: $_serverUrl');
       _channel = WebSocketChannel.connect(Uri.parse(_serverUrl));
+<<<<<<< HEAD
       
       // 메시지 수신 리스닝 먼저 설정
+=======
+      _isConnected = true;
+      _connectionStreamController.add(true);
+      print('[ROS2] 연결 성공!');
+
+      // 토픽 구독
+      _subscribeToTopic();
+      _subscribeToOrderDoneTopic();
+      _subscribeToVoiceOrderStartTopic();  // 추가
+
+      // 메시지 수신 리스닝
+>>>>>>> feat/16_voice_order_llm_ui
       _subscription = _channel!.stream.listen(
         _handleMessage,
         onError: _handleError,
@@ -160,12 +187,41 @@ class ROS2StatusService implements StatusService {
     }
   }
 
+  /// 주문 완료 토픽 구독
+  void _subscribeToOrderDoneTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': '/dsr01/kiosk/order_done',
+      'type': 'std_msgs/String',
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 주문 완료 토픽 구독: /dsr01/kiosk/order_done');
+  }
+
+  /// 음성 주문 시작 토픽 구독
+  void _subscribeToVoiceOrderStartTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': '/dsr01/kiosk/start_voice_order',
+      'type': 'std_msgs/String',
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 음성 주문 시작 토픽 구독: /dsr01/kiosk/start_voice_order');
+  }
+
   /// 메시지 처리
   void _handleMessage(dynamic message) {
     try {
       print('[ROS2] 수신 메시지: $message');
       final data = jsonDecode(message);
       
+<<<<<<< HEAD
       // rosbridge 응답 처리
       if (data['op'] == 'set_level') {
         // rosbridge 로그 레벨 설정 응답
@@ -214,11 +270,22 @@ class ROS2StatusService implements StatusService {
           
           if (_currentStatus != statusFlag) {
             print('[ROS2] ✅ 상태 수신: $_currentStatus → $statusFlag');
+=======
+      if (data['op'] == 'publish') {
+        // 상태 토픽 처리
+        if (data['topic'] == _topicName) {
+          // std_msgs/Int32 타입
+          int statusFlag = data['msg']['data'] ?? 0;
+          
+          if (_currentStatus != statusFlag) {
+            print('[ROS2] 상태 수신: $_currentStatus → $statusFlag');
+>>>>>>> feat/16_voice_order_llm_ui
             _currentStatus = statusFlag;
             _statusStreamController.add(_currentStatus);
           }
         }
         // 주문 완료 토픽 처리
+<<<<<<< HEAD
         else if (data['topic'] == '/kiosk/order_done') {
           // std_msgs/String 타입
           String msgData = data['msg']['data'] ?? '';
@@ -229,6 +296,28 @@ class ROS2StatusService implements StatusService {
             print('[ROS2] ✅ 주문 완료 확인! 페이지 이동 트리거');
             _orderDoneStreamController.add(true);
           }
+=======
+        else if (data['topic'] == '/dsr01/kiosk/order_done') {
+          // std_msgs/String 타입
+          String msgData = data['msg']['data'] ?? '';
+          print('[ROS2] 주문 완료 수신: "$msgData"');
+          
+          // "success: 'true'" 형식 체크 (또는 단순히 메시지가 왔으면 완료로 간주)
+          if (msgData.contains('true') || msgData.isNotEmpty) {
+            print('[ROS2] 주문 완료 확인! 페이지 이동 트리거');
+            _orderDoneStreamController.add(true);
+          }
+        }
+        // 음성 주문 시작 토픽 처리
+        else if (data['topic'] == '/dsr01/kiosk/start_voice_order') {
+          // std_msgs/String 타입
+          String msgData = data['msg']['data'] ?? '';
+          print('[ROS2] 음성 주문 시작 수신: "$msgData"');
+          
+          if (msgData.isNotEmpty) {
+            _voiceOrderStartStreamController.add(msgData);
+          }
+>>>>>>> feat/16_voice_order_llm_ui
         }
       }
       
@@ -342,34 +431,86 @@ class ROS2StatusService implements StatusService {
     // /dsr01/kiosk/order 토픽에 String 타입으로 발행
     const orderTopic = '/dsr01/kiosk/order';
     
+<<<<<<< HEAD
     print('🔧 [ROS2] 토픽 광고 중: $orderTopic');
+=======
+    print('[ROS2] 토픽 광고 중: $orderTopic');
+>>>>>>> feat/16_voice_order_llm_ui
     // 먼저 토픽 광고 (advertise)
     await _advertiseTopic(orderTopic, 'std_msgs/String');
     
     // 짧은 딜레이 후 발행 (rosbridge가 토픽을 등록할 시간)
     await Future.delayed(const Duration(milliseconds: 100));
     
+<<<<<<< HEAD
     print('📡 [ROS2] 토픽 발행 중: $orderTopic');
     print('📋 [ROS2] 데이터: "$orderData"');
+=======
+    print('[ROS2] 토픽 발행 중: $orderTopic');
+    print('[ROS2] 데이터: "$orderData"');
+>>>>>>> feat/16_voice_order_llm_ui
     
     // 토픽 발행
     bool success = await publishString(orderTopic, orderData);
     
     if (success) {
       print('');
+<<<<<<< HEAD
       print('✅✅✅ [ROS2 전송 성공] ✅✅✅');
+=======
+      print('[ROS2] 주문 정보 전송 성공');
+>>>>>>> feat/16_voice_order_llm_ui
       print('토픽: $orderTopic');
       print('데이터: "$orderData"');
       print('═══════════════════════════════════════════════════');
       print('');
     } else {
       print('');
+<<<<<<< HEAD
       print('❌❌❌ [ROS2 전송 실패] ❌❌❌');
+=======
+      print('[ROS2] 주문 정보 전송 실패');
+>>>>>>> feat/16_voice_order_llm_ui
       print('토픽: $orderTopic');
       print('데이터: "$orderData"');
       print('═══════════════════════════════════════════════════');
       print('');
     }
+<<<<<<< HEAD
+=======
+  }
+
+  /// 음성 주문 완료 신호 전송 (ROS2 모드에서만 동작)
+  @override
+  Future<void> publishVoiceOrderDone() async {
+    const topic = '/dsr01/kiosk/voice_order_done';
+    const message = 'voice_order_done';
+    
+    print('[ROS2] 토픽 광고 중: $topic');
+    await _advertiseTopic(topic, 'std_msgs/String');
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    print('[ROS2] 토픽 발행 중: $topic');
+    print('[ROS2] 메시지: "$message"');
+    
+    bool success = await publishString(topic, message);
+    
+    if (success) {
+      print('');
+      print('[ROS2] 음성 주문 완료 신호 전송 성공');
+      print('토픽: $topic');
+      print('메시지: "$message"');
+      print('═══════════════════════════════════════════════════');
+      print('');
+    } else {
+      print('');
+      print('[ROS2] 음성 주문 완료 신호 전송 실패');
+      print('토픽: $topic');
+      print('메시지: "$message"');
+      print('═══════════════════════════════════════════════════');
+      print('');
+    }
+>>>>>>> feat/16_voice_order_llm_ui
   }
 
   /// 토픽 광고 (토픽을 발행할 것임을 rosbridge에 알림)

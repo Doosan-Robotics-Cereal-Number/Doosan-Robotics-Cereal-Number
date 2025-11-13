@@ -41,11 +41,16 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
       isConfirmEnabled: selectedQuantity != null,
       showAppBar: false,
       onConfirmPressed: () {
+        print('[QuantitySelectionPage] 양 선택하기 버튼 클릭됨');
         Navigator.pushNamed(
           context,
           '/cup-selection',
           arguments: orderData,
         );
+      },
+      onBackPressed: () {
+        print('[QuantitySelectionPage] 뒤로가기 버튼 클릭됨');
+        Navigator.pop(context);
       },
       contentArea: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -57,6 +62,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
             imagePath: 'assets/images/many-cereal.png',
             isSelected: selectedQuantity == '많이',
             onTap: () {
+              print('[QuantitySelectionPage] 많이 선택됨');
               setState(() {
                 selectedQuantity = '많이';
                 orderData?.selectedQuantity = '많이';
@@ -71,6 +77,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
             imagePath: 'assets/images/normal-cereal.png',
             isSelected: selectedQuantity == '보통',
             onTap: () {
+              print('[QuantitySelectionPage] 적당히 선택됨');
               setState(() {
                 selectedQuantity = '보통';
                 orderData?.selectedQuantity = '보통';
@@ -85,6 +92,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
             imagePath: 'assets/images/small-cereal.png',
             isSelected: selectedQuantity == '적게',
             onTap: () {
+              print('[QuantitySelectionPage] 적게 선택됨');
               setState(() {
                 selectedQuantity = '적게';
                 orderData?.selectedQuantity = '적게';

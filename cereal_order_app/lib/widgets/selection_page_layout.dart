@@ -34,8 +34,11 @@ class SelectionPageLayout extends StatelessWidget {
               elevation: 0,
               leading: Container(
                 margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-                child: GestureDetector(
-                  onTap: onBackPressed ?? () => Navigator.pop(context),
+                  child: GestureDetector(
+                    onTap: onBackPressed ?? () {
+                      print('[SelectionPageLayout] 뒤로가기 버튼 클릭됨');
+                      Navigator.pop(context);
+                    },
                   child: Container(
                     width: 200,
                     height: 64,
@@ -73,7 +76,10 @@ class SelectionPageLayout extends StatelessWidget {
                 Align(
                   alignment: Alignment.topLeft,
                   child: GestureDetector(
-                    onTap: onBackPressed ?? () => Navigator.pop(context),
+                    onTap: onBackPressed ?? () {
+                      print('[SelectionPageLayout] 뒤로가기 버튼 클릭됨');
+                      Navigator.pop(context);
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
