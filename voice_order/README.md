@@ -23,10 +23,17 @@ voice_order/
 
 ## 🚀 설치
 
-### 1. 시스템 패키지 설치
+### 1. 저장소 클론
 
 ```bash
-# Ubuntu/Debian
+git clone https://github.com/Doosan-Robotics-Cereal-Number/Doosan-Robotics-Cereal-Number.git
+cd Doosan-Robotics-Cereal-Number/voice_order
+```
+
+### 2. 시스템 패키지 설치
+
+```bash
+# Ubuntu/Debian (라즈베리파이 포함)
 sudo apt-get update
 sudo apt-get install portaudio19-dev python3-pyaudio ffmpeg
 
@@ -34,11 +41,20 @@ sudo apt-get install portaudio19-dev python3-pyaudio ffmpeg
 brew install portaudio ffmpeg
 ```
 
-### 2. Python 패키지 설치
+### 3. Python 패키지 설치
 
 ```bash
 pip install -r requirements.txt
 ```
+
+**설치되는 패키지:**
+- `openai-whisper` - OpenAI Whisper 음성 인식
+- `openai` - OpenAI GPT API 클라이언트
+- `gtts` - Google Text-to-Speech
+- `playsound` - 오디오 재생
+- `pyaudio` - 마이크 입력
+- `webrtcvad` - 음성 감지 (VAD)
+- `numpy` - 수치 연산
 
 ## ⚙️ 설정
 
