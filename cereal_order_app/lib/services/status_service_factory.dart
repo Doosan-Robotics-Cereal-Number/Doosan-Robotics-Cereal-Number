@@ -23,8 +23,8 @@ class StatusServiceFactory {
         
       case StatusServiceType.ros2:
         return ROS2StatusService(
-          serverUrl: ros2ServerUrl ?? 'ws://localhost:9090',
-          topicName: ros2TopicName ?? '/robot/status',
+          serverUrl: ros2ServerUrl ?? 'ws://192.168.50.141:9090',
+          topicName: ros2TopicName ?? '/robot_status',
           topicType: ros2TopicType ?? 'std_msgs/Int32',
         );
     }

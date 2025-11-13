@@ -17,17 +17,17 @@ class AppConfig {
   // ROS2 설정 (StatusServiceType.ros2 사용시)
   // ============================================
   
-  static const String ros2ServerUrl = 'ws://localhost:9090';
+  static const String ros2ServerUrl = 'ws://192.168.50.141:9090';
   
-  // 구독할 토픽 (로봇 → 앱)
-  static const String ros2TopicName = '/robot/status';
-  static const String ros2TopicType = 'std_msgs/Int32';
+  // 🔥 로봇 상태 토픽 (로봇 → 앱)
+  static const String ros2TopicName = '/robot_status';  // ✅ 수정!
+  static const String ros2TopicType = 'std_msgs/String';  // ✅ String으로 변경!
   
-  // 주문 완료 토픽 (로봇 → 앱)
-  static const String orderDoneTopicName = '/dsr01/kiosk/order_done';
+  // 🔥 주문 완료 토픽 (로봇 → 앱)
+  static const String orderDoneTopicName = '/kiosk/order_done';
   static const String orderDoneTopicType = 'std_msgs/String';
   
-  // 발행할 토픽 (앱 → 로봇) - 주문 정보
+  // 🔥 주문 발행 토픽 (앱 → 로봇)
   static const String orderTopicName = '/dsr01/kiosk/order';
   static const String orderTopicType = 'std_msgs/String';
   
@@ -38,5 +38,3 @@ class AppConfig {
   /// 연결 상태 표시 여부
   static const bool showConnectionStatus = true;
 }
-
-

@@ -41,53 +41,94 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
       curve: Curves.easeInOut,
     ));
 
-    // 주문 정보 발행
-    _publishOrderToRobot();
-
     // 3초 타이머 시작
     _startCountdown();
     
     // 프로그레스바 애니메이션 시작
     _progressController.forward();
+    
+    // 위젯이 완전히 빌드된 후에 주문 정보 발행
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _publishOrderToRobot();
+    });
   }
 
   /// 주문 정보를 로봇에 발행
   Future<void> _publishOrderToRobot() async {
-    if (_orderPublished || widget.orderData == null) return;
+    if (_orderPublished) {
+      print('⚠️ [디버그] 이미 주문 정보를 발행했습니다');
+      return;
+    }
     
+    print('🔍 [디버그] _publishOrderToRobot 호출됨');
+    print('🔍 [디버그] _orderPublished: $_orderPublished');
+    print('🔍 [디버그] ROS2 연결 상태: ${widget.statusService.isConnected}');
+    
+    // ⭐ 핵심: ROS2 연결이 완료될 때까지 기다리기
+    if (!widget.statusService.isConnected) {
+      print('⏳ [디버그] ROS2 연결 대기 중... (최대 5초)');
+      
+      int waitCount = 0;
+      while (!widget.statusService.isConnected && waitCount < 50) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        waitCount++;
+        
+        if (waitCount % 10 == 0) {
+          print('⏳ 대기 중... ${waitCount * 100}ms');
+        }
+      }
+      
+      if (!widget.statusService.isConnected) {
+        print('❌ [디버그] ROS2 연결 타임아웃 (5초) - 토픽 발행 불가');
+        print('💡 [힌트] Network Manager에서 rosbridge_server가 실행 중인지 확인하세요');
+        return;
+      }
+      
+      print('✅ [디버그] ROS2 연결 완료! 토픽 발행 시작');
+    }
+    
+    // route arguments에서 직접 가져오기
+    final OrderData? orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
+    
+    print('🔍 [디버그] orderData == null: ${orderData == null}');
+    
+    if (orderData == null) {
+      print('⚠️ [디버그] orderData가 null입니다. widget.orderData 확인...');
+      print('🔍 [디버그] widget.orderData == null: ${widget.orderData == null}');
+      
+      // widget.orderData도 확인
+      if (widget.orderData != null) {
+        print('✅ [디버그] widget.orderData를 사용합니다');
+        _publishOrderWithData(widget.orderData!);
+        return;
+      }
+      
+      print('❌ [디버그] 주문 정보를 찾을 수 없습니다');
+      return;
+    }
+    
+    _publishOrderWithData(orderData);
+  }
+
+  /// 실제 주문 데이터 발행
+  Future<void> _publishOrderWithData(OrderData orderData) async {
+    if (_orderPublished) return;
     _orderPublished = true;
 
-    // 1. 시리얼 종류 (이미 영어: start_sequence_a 또는 start_sequence_b)
-    String cerealType = widget.orderData!.selectedCereal ?? 'start_sequence_a';
-    
-    // 2. 양 매핑 (한글 → 영어)
-    String quantityKr = widget.orderData!.selectedQuantity ?? '보통';
-    String quantity = 'medium';  // 기본값
-    
-    switch (quantityKr) {
-      case '많이':
-        quantity = 'large';
-        break;
-      case '보통':
-        quantity = 'medium';
-        break;
-      case '적게':
-        quantity = 'small';
-        break;
-    }
-    
-    // 3. 컵 타입 매핑 (한글 → 영어)
-    String cupTypeKr = widget.orderData!.selectedCup ?? '매장컵';
-    String cupType = 'store';  // 기본값
-    
-    if (cupTypeKr == '개인컵') {
-      cupType = 'personal';
-    } else if (cupTypeKr == '매장컵') {
-      cupType = 'store';
-    }
+    print('✅ [디버그] orderData 확보 완료!');
 
-    // 4. CSV 형식으로 결합 (쉼표로 구분)
-    String orderDataStr = '$cerealType,$quantity,$cupType';
+    // 1. 시리얼 종류 → seat 매핑
+    String cerealType = orderData.selectedCereal ?? 'start_sequence_a';
+    String seat = cerealType == 'start_sequence_b' ? 'B' : 'A';
+    
+    // 2. 양 (한글 그대로 사용)
+    String portion = orderData.selectedQuantity ?? '보통';
+    
+    // 3. 컵 타입 (한글 그대로 사용)
+    String cupType = orderData.selectedCup ?? '매장컵';
+
+    // 4. JSON 형식으로 생성
+    String orderDataStr = '{"seat":"$seat", "portion":"$portion", "cup_type":"$cupType"}';
 
     // 5. 로봇에 발행
     print('');
@@ -96,15 +137,18 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
     print('═══════════════════════════════════════════════════');
     print('🎯 토픽명: ${AppConfig.orderTopicName}');
     print('📦 원본 데이터:');
-    print('   - 시리얼: $cerealType ($quantityKr)');
-    print('   - 양: $quantity ($quantityKr)');
-    print('   - 컵: $cupType ($cupTypeKr)');
-    print('📨 전송 데이터: "$orderDataStr"');
+    print('   - 시리얼: $cerealType → seat: $seat');
+    print('   - 양: $portion');
+    print('   - 컵: $cupType');
+    print('📨 JSON 전송 데이터: $orderDataStr');
     print('═══════════════════════════════════════════════════');
 
     await widget.statusService.publishOrderInfo(orderData: orderDataStr);
 
-    print('✅ [주문 토픽 전송] 발행 완료!');
+    print('');
+    print('✅✅✅ [주문 토픽 전송 완료] ✅✅✅');
+    print('로봇이 주문을 받았습니다!');
+    print('═══════════════════════════════════════════════════');
     print('');
   }
 
