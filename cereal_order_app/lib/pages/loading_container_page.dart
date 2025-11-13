@@ -95,7 +95,7 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
     // 주문 완료 스트림 구독
     _orderDoneSubscription = _statusService.orderDoneStream.listen((done) {
       if (mounted && done) {
-        print('🎉 주문 완료! OrderCompletePage로 이동');
+        print('[LoadingContainerPage] 주문 완료! OrderCompletePage로 이동');
         Navigator.pushNamed(
           context,
           '/order-complete',

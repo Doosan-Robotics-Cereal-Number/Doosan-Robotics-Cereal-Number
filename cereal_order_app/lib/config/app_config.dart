@@ -27,6 +27,10 @@ class AppConfig {
   static const String orderDoneTopicName = '/dsr01/kiosk/order_done';
   static const String orderDoneTopicType = 'std_msgs/String';
   
+  // 음성 주문 시작 토픽 (로봇 → 앱)
+  static const String voiceOrderStartTopicName = '/dsr01/kiosk/start_voice_order';
+  static const String voiceOrderStartTopicType = 'std_msgs/String';
+  
   // 발행할 토픽 (앱 → 로봇) - 주문 정보
   static const String orderTopicName = '/dsr01/kiosk/order';
   static const String orderTopicType = 'std_msgs/String';

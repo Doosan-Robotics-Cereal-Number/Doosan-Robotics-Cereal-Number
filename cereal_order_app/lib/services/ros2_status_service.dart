@@ -14,6 +14,7 @@ class ROS2StatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
+  final _voiceOrderStartStreamController = StreamController<String>.broadcast();
   
   // 설정값
   String _serverUrl;
@@ -44,6 +45,9 @@ class ROS2StatusService implements StatusService {
   Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
 
   @override
+  Stream<String> get voiceOrderStartStream => _voiceOrderStartStreamController.stream;
+
+  @override
   Future<void> start() async {
     print('[ROS2] WebSocket 연결 시작: $_serverUrl');
     await _connect();
@@ -61,6 +65,7 @@ class ROS2StatusService implements StatusService {
     _statusStreamController.close();
     _connectionStreamController.close();
     _orderDoneStreamController.close();
+    _voiceOrderStartStreamController.close();
   }
 
   @override
@@ -88,6 +93,7 @@ class ROS2StatusService implements StatusService {
       // 토픽 구독
       _subscribeToTopic();
       _subscribeToOrderDoneTopic();
+      _subscribeToVoiceOrderStartTopic();  // 추가
 
       // 메시지 수신 리스닝
       _subscription = _channel!.stream.listen(
@@ -132,6 +138,20 @@ class ROS2StatusService implements StatusService {
     print('[ROS2] 주문 완료 토픽 구독: /dsr01/kiosk/order_done');
   }
 
+  /// 음성 주문 시작 토픽 구독
+  void _subscribeToVoiceOrderStartTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': '/dsr01/kiosk/start_voice_order',
+      'type': 'std_msgs/String',
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 음성 주문 시작 토픽 구독: /dsr01/kiosk/start_voice_order');
+  }
+
   /// 메시지 처리
   void _handleMessage(dynamic message) {
     try {
@@ -159,6 +179,16 @@ class ROS2StatusService implements StatusService {
           if (msgData.contains('true') || msgData.isNotEmpty) {
             print('[ROS2] 주문 완료 확인! 페이지 이동 트리거');
             _orderDoneStreamController.add(true);
+          }
+        }
+        // 음성 주문 시작 토픽 처리
+        else if (data['topic'] == '/dsr01/kiosk/start_voice_order') {
+          // std_msgs/String 타입
+          String msgData = data['msg']['data'] ?? '';
+          print('[ROS2] 음성 주문 시작 수신: "$msgData"');
+          
+          if (msgData.isNotEmpty) {
+            _voiceOrderStartStreamController.add(msgData);
           }
         }
       }
@@ -247,10 +277,10 @@ class ROS2StatusService implements StatusService {
       });
 
       _channel!.sink.add(publishMessage);
-      print('✓ [ROS2] String 토픽 발행 성공: $topic = "$value"');
+      print('[ROS2] 토픽 발행 성공: $topic = "$value"');
       return true;
     } catch (e) {
-      print('✗ [ROS2] String 토픽 발행 실패: $e');
+      print('[ROS2] 토픽 발행 실패: $e');
       return false;
     }
   }
@@ -264,31 +294,63 @@ class ROS2StatusService implements StatusService {
     // /dsr01/kiosk/order 토픽에 String 타입으로 발행
     const orderTopic = '/dsr01/kiosk/order';
     
-    print('🔧 [ROS2] 토픽 광고 중: $orderTopic');
+    print('[ROS2] 토픽 광고 중: $orderTopic');
     // 먼저 토픽 광고 (advertise)
     await _advertiseTopic(orderTopic, 'std_msgs/String');
     
     // 짧은 딜레이 후 발행 (rosbridge가 토픽을 등록할 시간)
     await Future.delayed(const Duration(milliseconds: 100));
     
-    print('📡 [ROS2] 토픽 발행 중: $orderTopic');
-    print('📋 [ROS2] 데이터: "$orderData"');
+    print('[ROS2] 토픽 발행 중: $orderTopic');
+    print('[ROS2] 데이터: "$orderData"');
     
     // 토픽 발행
     bool success = await publishString(orderTopic, orderData);
     
     if (success) {
       print('');
-      print('✅✅✅ [ROS2 전송 성공] ✅✅✅');
+      print('[ROS2] 주문 정보 전송 성공');
       print('토픽: $orderTopic');
       print('데이터: "$orderData"');
       print('═══════════════════════════════════════════════════');
       print('');
     } else {
       print('');
-      print('❌❌❌ [ROS2 전송 실패] ❌❌❌');
+      print('[ROS2] 주문 정보 전송 실패');
       print('토픽: $orderTopic');
       print('데이터: "$orderData"');
+      print('═══════════════════════════════════════════════════');
+      print('');
+    }
+  }
+
+  /// 음성 주문 완료 신호 전송 (ROS2 모드에서만 동작)
+  @override
+  Future<void> publishVoiceOrderDone() async {
+    const topic = '/dsr01/kiosk/voice_order_done';
+    const message = 'voice_order_done';
+    
+    print('[ROS2] 토픽 광고 중: $topic');
+    await _advertiseTopic(topic, 'std_msgs/String');
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    print('[ROS2] 토픽 발행 중: $topic');
+    print('[ROS2] 메시지: "$message"');
+    
+    bool success = await publishString(topic, message);
+    
+    if (success) {
+      print('');
+      print('[ROS2] 음성 주문 완료 신호 전송 성공');
+      print('토픽: $topic');
+      print('메시지: "$message"');
+      print('═══════════════════════════════════════════════════');
+      print('');
+    } else {
+      print('');
+      print('[ROS2] 음성 주문 완료 신호 전송 실패');
+      print('토픽: $topic');
+      print('메시지: "$message"');
       print('═══════════════════════════════════════════════════');
       print('');
     }

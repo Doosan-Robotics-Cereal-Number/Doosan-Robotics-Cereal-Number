@@ -92,19 +92,19 @@ class _LoadingPageState extends State<LoadingPage> with TickerProviderStateMixin
     // 5. 로봇에 발행
     print('');
     print('═══════════════════════════════════════════════════');
-    print('📤 [주문 토픽 전송] LoadingPage에서 발행 시작');
+    print('[LoadingPage] 주문 토픽 전송 시작');
     print('═══════════════════════════════════════════════════');
-    print('🎯 토픽명: ${AppConfig.orderTopicName}');
-    print('📦 원본 데이터:');
+    print('토픽명: ${AppConfig.orderTopicName}');
+    print('원본 데이터:');
     print('   - 시리얼: $cerealType ($quantityKr)');
     print('   - 양: $quantity ($quantityKr)');
     print('   - 컵: $cupType ($cupTypeKr)');
-    print('📨 전송 데이터: "$orderDataStr"');
+    print('전송 데이터: "$orderDataStr"');
     print('═══════════════════════════════════════════════════');
 
     await widget.statusService.publishOrderInfo(orderData: orderDataStr);
 
-    print('✅ [주문 토픽 전송] 발행 완료!');
+    print('[LoadingPage] 주문 토픽 전송 완료');
     print('');
   }
 

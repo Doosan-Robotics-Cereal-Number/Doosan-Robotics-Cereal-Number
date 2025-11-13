@@ -7,6 +7,7 @@ class ManualStatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
+  final _voiceOrderStartStreamController = StreamController<String>.broadcast();
   
   int _currentStatus = 0;
   bool _isActive = false;
@@ -19,6 +20,9 @@ class ManualStatusService implements StatusService {
 
   @override
   Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
+
+  @override
+  Stream<String> get voiceOrderStartStream => _voiceOrderStartStreamController.stream;
 
   @override
   Future<void> start() async {
@@ -42,6 +46,7 @@ class ManualStatusService implements StatusService {
     _statusStreamController.close();
     _connectionStreamController.close();
     _orderDoneStreamController.close();
+    _voiceOrderStartStreamController.close();
   }
 
   @override
@@ -80,6 +85,12 @@ class ManualStatusService implements StatusService {
   }) async {
     print('[Manual] 주문 정보 (로그만 출력):');
     print('  - orderData: "$orderData"');
+  }
+
+  /// 음성 주문 완료 신호 전송 (수동 모드에서는 로그만 출력)
+  @override
+  Future<void> publishVoiceOrderDone() async {
+    print('[Manual] 음성 주문 완료 (로그만 출력)');
   }
 }
 
