@@ -12,9 +12,6 @@ abstract class StatusService {
   /// 주문 완료 스트림 (true: 완료)
   Stream<bool> get orderDoneStream;
   
-  /// 음성 주문 시작 스트림 (String: 시작 메시지)
-  Stream<String> get voiceOrderStartStream;
-  
   /// 서비스 시작
   Future<void> start();
   
@@ -41,6 +38,12 @@ abstract class StatusService {
   Future<void> publishVoiceOrderDone() async {
     // 기본 구현: 아무것도 하지 않음
     print('[StatusService] publishVoiceOrderDone 기본 구현 (발행 안 함)');
+  }
+
+  /// 음성 주문 시작 신호 전송 (ROS2 모드에서만 동작)
+  Future<void> publishVoiceOrderStart() async {
+    // 기본 구현: 아무것도 하지 않음
+    print('[StatusService] publishVoiceOrderStart 기본 구현 (발행 안 함)');
   }
 }
 

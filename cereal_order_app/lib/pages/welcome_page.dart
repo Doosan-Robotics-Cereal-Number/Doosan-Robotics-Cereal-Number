@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import '../services/status_service.dart';
 import '../services/status_service_factory.dart';
 import '../config/app_config.dart';
@@ -14,7 +13,6 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage> {
   // 상태 서비스
   late StatusService _statusService;
-  StreamSubscription<String>? _voiceOrderSubscription;
 
   @override
   void initState() {
@@ -34,20 +32,10 @@ class _WelcomePageState extends State<WelcomePage> {
 
     // 서비스 시작
     _statusService.start();
-
-    // 음성 주문 시작 토픽 구독
-    _voiceOrderSubscription = _statusService.voiceOrderStartStream.listen((message) {
-      print('[WelcomePage] 음성 주문 시작: $message');
-      if (mounted) {
-        // 음성 주문 페이지로 이동
-        Navigator.pushNamed(context, '/voice-order');
-      }
-    });
   }
 
   @override
   void dispose() {
-    _voiceOrderSubscription?.cancel();
     _statusService.stop();
     _statusService.dispose();
     super.dispose();

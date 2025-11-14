@@ -24,7 +24,7 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
   }
 
   /// 서비스 초기화
-  void _initializeService() {
+  void _initializeService() async {
     // 설정에 따라 서비스 생성
     _statusService = StatusServiceFactory.create(
       AppConfig.currentServiceType,
@@ -34,7 +34,10 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
     );
 
     // 서비스 시작
-    _statusService.start();
+    await _statusService.start();
+
+    // 음성 주문 시작 신호 발행
+    await _statusService.publishVoiceOrderStart();
 
     // 주문 완료 스트림 구독 (order_done과 동일한 흐름)
     _orderDoneSubscription = _statusService.orderDoneStream.listen((done) {
