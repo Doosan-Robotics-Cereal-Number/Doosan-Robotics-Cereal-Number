@@ -210,58 +210,6 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
     );
   }
 
-  /// 연결 상태 위젯
-  Widget _buildConnectionStatus() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: _isConnected 
-            ? Colors.green.withOpacity(0.9)
-            : Colors.red.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _isConnected ? Icons.check_circle : Icons.error,
-            color: Colors.white,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _serviceTypeName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                _isConnected ? '연결됨' : '연결 끊김',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   /// 디버그 버튼들
   Widget _buildDebugButtons() {
     return Column(
