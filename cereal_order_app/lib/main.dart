@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'pages/welcome_page.dart';
-import 'pages/cereal_selection_page.dart';
-import 'pages/cup_selection_page.dart';
-import 'pages/quantity_selection_page.dart';
-import 'pages/loading_container_page.dart';
-import 'pages/order_complete_page.dart';
-import 'pages/voice_order_page.dart';
+import 'package:cereal_order_app/pages/welcome_page.dart';
+import 'package:cereal_order_app/pages/cereal_selection_page.dart';
+import 'package:cereal_order_app/pages/cup_selection_page.dart';
+import 'package:cereal_order_app/pages/quantity_selection_page.dart';
+import 'package:cereal_order_app/pages/loading_container_page.dart';
+import 'package:cereal_order_app/pages/order_complete_page.dart';
+import 'package:cereal_order_app/pages/voice_order_page.dart';
 
 void main() {
   runApp(const CerealOrderApp());
