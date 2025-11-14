@@ -16,6 +16,7 @@ class ROS2StatusService implements StatusService {
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
   final _orderInfoStreamController = StreamController<Map<String, String>>.broadcast();  // 주문 정보 스트림
+  final _orderCancelStreamController = StreamController<String>.broadcast();  // 주문 취소 스트림
   
   // 설정값
   String _serverUrl;
@@ -48,6 +49,9 @@ class ROS2StatusService implements StatusService {
   /// 주문 정보 스트림 (메뉴, 양, 컵)
   Stream<Map<String, String>> get orderInfoStream => _orderInfoStreamController.stream;
 
+  /// 주문 취소 스트림 (취소 이유)
+  Stream<String> get orderCancelStream => _orderCancelStreamController.stream;
+
   @override
   Future<void> start() async {
     print('[ROS2] WebSocket 연결 시작: $_serverUrl');
@@ -67,6 +71,7 @@ class ROS2StatusService implements StatusService {
     _connectionStreamController.close();
     _orderDoneStreamController.close();
     _orderInfoStreamController.close();  // 주문 정보 스트림 닫기
+    _orderCancelStreamController.close();  // 주문 취소 스트림 닫기
   }
 
   @override
@@ -96,6 +101,7 @@ class ROS2StatusService implements StatusService {
       _subscribeToTopic();
       _subscribeToOrderDoneTopic();
       _subscribeToOrderTopic();  // 주문 정보 토픽 구독
+      _subscribeToOrderCancelTopic();  // 주문 취소 토픽 구독
 
       // 메시지 수신 리스닝
       _subscription = _channel!.stream.listen(
@@ -159,6 +165,20 @@ class ROS2StatusService implements StatusService {
 
     _channel!.sink.add(subscribeMessage);
     print('[ROS2] 주문 정보 토픽 구독: /dsr01/kiosk/order');
+  }
+
+  /// 주문 취소 토픽 구독
+  void _subscribeToOrderCancelTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': '/dsr01/kiosk/voice_order_cancel',
+      'type': 'std_msgs/String',
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 주문 취소 토픽 구독: /dsr01/kiosk/voice_order_cancel');
   }
 
   /// 메시지 처리
@@ -255,6 +275,15 @@ class ROS2StatusService implements StatusService {
               'cup': cup,
             });
           }
+        }
+
+        // 주문 취소 토픽 처리
+        else if (data['topic'] == '/dsr01/kiosk/voice_order_cancel') {
+          String cancelReason = data['msg']['data'] ?? '';
+          print('[ROS2] ❌ 주문 취소 수신: "$cancelReason"');
+
+          // 취소 이유를 스트림으로 전달
+          _orderCancelStreamController.add(cancelReason);
         }
       }
       

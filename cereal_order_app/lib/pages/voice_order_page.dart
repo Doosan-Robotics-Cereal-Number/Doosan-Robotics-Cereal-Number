@@ -16,6 +16,7 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
   late StatusService _statusService;
   StreamSubscription<bool>? _orderDoneSubscription;
   StreamSubscription<Map<String, String>>? _orderInfoSubscription;  // 주문 정보 구독
+  StreamSubscription<String>? _orderCancelSubscription;  // 주문 취소 구독
   OrderData? orderData;
 
   // 주문 정보 표시용 상태 변수
@@ -68,6 +69,15 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
         print('[VoiceOrderPage] 주문 정보 수신: 메뉴=$_receivedMenu, 양=$_receivedSize, 컵=$_receivedCup');
       }
     });
+
+    // 주문 취소 스트림 구독
+    _orderCancelSubscription = (_statusService as dynamic).orderCancelStream.listen((cancelReason) {
+      if (mounted) {
+        print('[VoiceOrderPage] 주문 취소 수신: $cancelReason');
+        // 초기 화면으로 복귀
+        Navigator.pop(context);
+      }
+    });
   }
 
   @override
@@ -87,6 +97,7 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
   void dispose() {
     _orderDoneSubscription?.cancel();
     _orderInfoSubscription?.cancel();  // 주문 정보 구독 취소
+    _orderCancelSubscription?.cancel();  // 주문 취소 구독 취소
     _statusService.stop();
     _statusService.dispose();
     super.dispose();

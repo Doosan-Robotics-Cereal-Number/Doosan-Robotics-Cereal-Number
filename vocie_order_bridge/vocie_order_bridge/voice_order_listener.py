@@ -34,6 +34,13 @@ class VoiceOrderListener(Node):
             10
         )
 
+        # Publisher 생성 (주문 취소 발행용)
+        self.cancel_publisher = self.create_publisher(
+            String,
+            '/dsr01/kiosk/voice_order_cancel',
+            10
+        )
+
         # main_gpt.py 경로 (share 폴더에서 찾기)
         package_share_dir = get_package_share_directory('vocie_order_bridge')
         self.voice_order_path = os.path.join(package_share_dir, 'voice_order')
@@ -142,6 +149,18 @@ class VoiceOrderListener(Node):
                     # ROS2 토픽 발행
                     self.publish_order(order_csv)
 
+                # 주문 취소 감지
+                elif '[VOICE_ORDER_CANCEL]' in line:
+                    # 취소 이유 추출
+                    cancel_reason = line.split('[VOICE_ORDER_CANCEL]')[1].strip()
+                    self.get_logger().info('')
+                    self.get_logger().info('═══════════════════════════════════════')
+                    self.get_logger().info(f'❌ 주문 취소 감지: {cancel_reason}')
+                    self.get_logger().info('═══════════════════════════════════════')
+
+                    # ROS2 토픽 발행
+                    self.publish_cancel(cancel_reason)
+
         except Exception as e:
             self.get_logger().error(f'❌ stdout 모니터링 에러: {e}')
 
@@ -162,6 +181,24 @@ class VoiceOrderListener(Node):
 
         except Exception as e:
             self.get_logger().error(f'❌ 토픽 발행 실패: {e}')
+
+    def publish_cancel(self, cancel_reason):
+        """주문 취소를 ROS2 토픽으로 발행"""
+
+        try:
+            msg = String()
+            msg.data = cancel_reason
+            self.cancel_publisher.publish(msg)
+
+            self.get_logger().info('')
+            self.get_logger().info('✅ ROS2 취소 토픽 발행 성공!')
+            self.get_logger().info(f'📤 토픽: /dsr01/kiosk/voice_order_cancel')
+            self.get_logger().info(f'❌ 이유: {cancel_reason}')
+            self.get_logger().info('═══════════════════════════════════════')
+            self.get_logger().info('')
+
+        except Exception as e:
+            self.get_logger().error(f'❌ 취소 토픽 발행 실패: {e}')
 
 
     def stop_voice_order(self):

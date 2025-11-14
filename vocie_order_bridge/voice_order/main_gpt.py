@@ -77,6 +77,7 @@ def main():
 
         # 대화 루프
         order_complete = False
+        no_response_count = 0  # 무응답 카운터
 
         while not order_complete:
             try:
@@ -87,6 +88,9 @@ def main():
                 if audio_file is None:
                     print("\n⏱️  주문 시간이 초과되었습니다.")
                     speak("주문 시간이 초과되었습니다. 처음부터 다시 시작해주세요.")
+
+                    # 취소 신호 출력 (voice_order_listener가 감지)
+                    print("[VOICE_ORDER_CANCEL]timeout")
                     break  # 대화 루프 종료 → 다음 주문으로
 
             except KeyboardInterrupt:
@@ -98,14 +102,37 @@ def main():
                 user_text = recognizer.transcribe(audio_file)
                 print(f"\n👤 손님: {user_text}")
 
+                # 빈 응답 체크 (무응답 카운터)
+                if not user_text or len(user_text.strip()) < 2:
+                    no_response_count += 1
+                    print(f"⚠️  무응답 ({no_response_count}/3)")
+
+                    if no_response_count >= 3:
+                        print("\n🔇 반응이 없어 주문을 종료합니다.")
+                        speak("반응이 없어 주문을 종료합니다.")
+                        print("[VOICE_ORDER_CANCEL]no_response")
+                        break
+
+                    speak("잘 안 들렸어요. 다시 말씀해주세요.")
+                    continue
+                else:
+                    no_response_count = 0  # 정상 응답 시 카운터 리셋
+
                 # 3. GPT 대화
-                response_text, order_info = assistant.chat(user_text)
+                response_text, order_info, cancel_flag = assistant.chat(user_text)
                 print(f"🤖 직원: {response_text}")
 
                 # 4. TTS 응답
                 speak(response_text)
 
-                # 5. 주문 완료 체크
+                # 5. 취소 의도 체크
+                if cancel_flag:
+                    print("\n❌ 손님이 주문을 취소했습니다.")
+                    # speak("알겠습니다. 주문을 취소하겠습니다.")
+                    print("[VOICE_ORDER_CANCEL]user_cancel")
+                    break
+
+                # 6. 주문 완료 체크
                 if order_info:
                     print("\n" + "="*60)
                     print("✅ 주문 접수 완료!")
@@ -137,13 +164,9 @@ def main():
                 if os.path.exists(audio_file):
                     os.remove(audio_file)
 
-        # 주문 완료 후 종료
-        if order_complete:
-            print("\n👋 주문 완료. 시스템 종료")
-            break
-
-        # 타임아웃이나 다른 이유로 중단된 경우에만 재시작
-        assistant.reset()
+        # 주문 완료/취소 후 종료 (더 이상 재시작하지 않음)
+        print("\n👋 시스템 종료")
+        break
 
 
 if __name__ == "__main__":
