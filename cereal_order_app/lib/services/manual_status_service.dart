@@ -7,10 +7,6 @@ class ManualStatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
-<<<<<<< HEAD
-=======
-  final _voiceOrderStartStreamController = StreamController<String>.broadcast();
->>>>>>> feat/16_voice_order_llm_ui
   
   int _currentStatus = 0;
   bool _isActive = false;
@@ -25,12 +21,6 @@ class ManualStatusService implements StatusService {
   Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
 
   @override
-<<<<<<< HEAD
-=======
-  Stream<String> get voiceOrderStartStream => _voiceOrderStartStreamController.stream;
-
-  @override
->>>>>>> feat/16_voice_order_llm_ui
   Future<void> start() async {
     print('[Manual] 수동 상태 서비스 시작');
     _isActive = true;
@@ -52,10 +42,6 @@ class ManualStatusService implements StatusService {
     _statusStreamController.close();
     _connectionStreamController.close();
     _orderDoneStreamController.close();
-<<<<<<< HEAD
-=======
-    _voiceOrderStartStreamController.close();
->>>>>>> feat/16_voice_order_llm_ui
   }
 
   @override
@@ -94,15 +80,18 @@ class ManualStatusService implements StatusService {
   }) async {
     print('[Manual] 주문 정보 (로그만 출력):');
     print('  - orderData: "$orderData"');
-<<<<<<< HEAD
-=======
   }
 
   /// 음성 주문 완료 신호 전송 (수동 모드에서는 로그만 출력)
   @override
   Future<void> publishVoiceOrderDone() async {
     print('[Manual] 음성 주문 완료 (로그만 출력)');
->>>>>>> feat/16_voice_order_llm_ui
+  }
+
+  /// 음성 주문 시작 신호 전송 (수동 모드에서는 로그만 출력)
+  @override
+  Future<void> publishVoiceOrderStart() async {
+    print('[Manual] 음성 주문 시작 (로그만 출력)');
   }
 }
 
