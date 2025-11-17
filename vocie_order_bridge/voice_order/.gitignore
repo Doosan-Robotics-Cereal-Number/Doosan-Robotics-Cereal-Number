@@ -1,0 +1,36 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+
+# 환경 변수
+.env
+.env.local
+
+# 임시 파일
+temp_*.wav
+temp_*.mp3
+*.wav
+*.mp3
+test_image_*.jpg
+
+# API 키 / 설정
+config.py
+secrets.py
+.secrets
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log

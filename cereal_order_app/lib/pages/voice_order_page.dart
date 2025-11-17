@@ -15,7 +15,14 @@ class VoiceOrderPage extends StatefulWidget {
 class _VoiceOrderPageState extends State<VoiceOrderPage> {
   late StatusService _statusService;
   StreamSubscription<bool>? _orderDoneSubscription;
+  StreamSubscription<Map<String, String>>? _orderInfoSubscription;  // 주문 정보 구독
+  StreamSubscription<String>? _orderCancelSubscription;  // 주문 취소 구독
   OrderData? orderData;
+
+  // 주문 정보 표시용 상태 변수
+  String? _receivedMenu;
+  String? _receivedSize;
+  String? _receivedCup;
 
   @override
   void initState() {
@@ -50,6 +57,27 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
         );
       }
     });
+
+    // 주문 정보 스트림 구독
+    _orderInfoSubscription = (_statusService as dynamic).orderInfoStream.listen((orderInfo) {
+      if (mounted) {
+        setState(() {
+          _receivedMenu = orderInfo['menu'];
+          _receivedSize = orderInfo['size'];
+          _receivedCup = orderInfo['cup'];
+        });
+        print('[VoiceOrderPage] 주문 정보 수신: 메뉴=$_receivedMenu, 양=$_receivedSize, 컵=$_receivedCup');
+      }
+    });
+
+    // 주문 취소 스트림 구독
+    _orderCancelSubscription = (_statusService as dynamic).orderCancelStream.listen((cancelReason) {
+      if (mounted) {
+        print('[VoiceOrderPage] 주문 취소 수신: $cancelReason');
+        // 초기 화면으로 복귀
+        Navigator.pop(context);
+      }
+    });
   }
 
   @override
@@ -68,6 +96,8 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
   @override
   void dispose() {
     _orderDoneSubscription?.cancel();
+    _orderInfoSubscription?.cancel();  // 주문 정보 구독 취소
+    _orderCancelSubscription?.cancel();  // 주문 취소 구독 취소
     _statusService.stop();
     _statusService.dispose();
     super.dispose();
@@ -120,6 +150,40 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
               const SizedBox(height: 60),
               // 메인 컨텐츠 영역
               const Spacer(),
+
+              // 주문 정보 표시
+              if (_receivedMenu != null && _receivedSize != null && _receivedCup != null)
+                Container(
+                  padding: const EdgeInsets.all(40),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF0064FF),
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        '주문 내역',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF121212),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      _buildOrderInfoRow('메뉴', _receivedMenu!),
+                      const SizedBox(height: 16),
+                      _buildOrderInfoRow('양', _receivedSize!),
+                      const SizedBox(height: 16),
+                      _buildOrderInfoRow('컵', _receivedCup!),
+                    ],
+                  ),
+                ),
+
+              const Spacer(),
               // 주문 완료 버튼
               Center(
                 child: SizedBox(
@@ -151,6 +215,30 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
           ),
         ),
       ),
+    );
+  }
+
+  /// 주문 정보 행 위젯
+  Widget _buildOrderInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          '$label: ',
+          style: const TextStyle(
+            fontSize: 24,
+            color: Color(0xFF666666),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF0064FF),
+          ),
+        ),
+      ],
     );
   }
 }

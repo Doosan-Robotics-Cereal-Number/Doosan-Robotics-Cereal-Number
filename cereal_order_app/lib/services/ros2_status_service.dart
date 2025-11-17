@@ -15,6 +15,8 @@ class ROS2StatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
+  final _orderInfoStreamController = StreamController<Map<String, String>>.broadcast();  // 주문 정보 스트림
+  final _orderCancelStreamController = StreamController<String>.broadcast();  // 주문 취소 스트림
   
   // 설정값
   String _serverUrl;
@@ -44,6 +46,12 @@ class ROS2StatusService implements StatusService {
   @override
   Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
 
+  /// 주문 정보 스트림 (메뉴, 양, 컵)
+  Stream<Map<String, String>> get orderInfoStream => _orderInfoStreamController.stream;
+
+  /// 주문 취소 스트림 (취소 이유)
+  Stream<String> get orderCancelStream => _orderCancelStreamController.stream;
+
   @override
   Future<void> start() async {
     print('[ROS2] WebSocket 연결 시작: $_serverUrl');
@@ -62,6 +70,8 @@ class ROS2StatusService implements StatusService {
     _statusStreamController.close();
     _connectionStreamController.close();
     _orderDoneStreamController.close();
+    _orderInfoStreamController.close();  // 주문 정보 스트림 닫기
+    _orderCancelStreamController.close();  // 주문 취소 스트림 닫기
   }
 
   @override
@@ -90,6 +100,8 @@ class ROS2StatusService implements StatusService {
       // 토픽 구독
       _subscribeToTopic();
       _subscribeToOrderDoneTopic();
+      _subscribeToOrderTopic();  // 주문 정보 토픽 구독
+      _subscribeToOrderCancelTopic();  // 주문 취소 토픽 구독
 
       // 메시지 수신 리스닝
       _subscription = _channel!.stream.listen(
@@ -139,6 +151,34 @@ class ROS2StatusService implements StatusService {
 
     _channel!.sink.add(subscribeMessage);
     print('[ROS2] 주문 완료 토픽 구독: /dsr01/kiosk/order_done');
+  }
+
+  /// 주문 정보 토픽 구독
+  void _subscribeToOrderTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': '/dsr01/kiosk/order',
+      'type': 'std_msgs/String',
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 주문 정보 토픽 구독: /dsr01/kiosk/order');
+  }
+
+  /// 주문 취소 토픽 구독
+  void _subscribeToOrderCancelTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': '/dsr01/kiosk/voice_order_cancel',
+      'type': 'std_msgs/String',
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 주문 취소 토픽 구독: /dsr01/kiosk/voice_order_cancel');
   }
 
   /// 메시지 처리
@@ -210,6 +250,40 @@ class ROS2StatusService implements StatusService {
             print('[ROS2] ✅ 주문 완료 확인! 페이지 이동 트리거');
             _orderDoneStreamController.add(true);
           }
+        }
+
+        // 주문 정보 토픽 처리 
+        else if (data['topic'] == '/dsr01/kiosk/order'){
+          String orderCsv = data['msg']['data'] ?? '';
+          print('[ROS2] ✅ 주문 정보 수신: "$orderCsv"');
+
+          // CSV 파싱
+          List<String> parts = orderCsv.split(',');
+          if (parts.length == 3){
+            // 한글 변환
+            String menu = parts[0].contains('sequence_a') ? '코코볼' : '그래놀라';
+            String size = parts[1] == 'large' ? '많이' :
+                          parts[1] == 'small' ? '적게' : '보통';
+            String cup = parts[2] == 'personal' ? '개인컵' : '매장컵';
+
+            print('[ROS2] 주문 내역: 메뉴=$menu, 양=$size, 컵=$cup');
+
+            // 주문 정보를 스트림으로 전달
+            _orderInfoStreamController.add({
+              'menu': menu,
+              'size': size,
+              'cup': cup,
+            });
+          }
+        }
+
+        // 주문 취소 토픽 처리
+        else if (data['topic'] == '/dsr01/kiosk/voice_order_cancel') {
+          String cancelReason = data['msg']['data'] ?? '';
+          print('[ROS2] ❌ 주문 취소 수신: "$cancelReason"');
+
+          // 취소 이유를 스트림으로 전달
+          _orderCancelStreamController.add(cancelReason);
         }
       }
       
