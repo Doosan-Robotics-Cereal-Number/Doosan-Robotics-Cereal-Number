@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>gwonho_interfaces</name>
+  <version>0.0.0</version>
+  <description>Actions for Doosan orchestration</description>
+  <maintainer email="you@example.com">gwon_ho</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- rosidl -->
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <!-- 인터페이스에서 참조하는 의존 패키지들 -->
+  <build_depend>std_msgs</build_depend>
+  <build_depend>builtin_interfaces</build_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>builtin_interfaces</exec_depend>
+
+  <!-- 이것도 꼭 넣어주세요 (인터페이스 패키지 그룹) -->
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+
+  
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

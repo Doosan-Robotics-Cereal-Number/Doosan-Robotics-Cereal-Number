@@ -1,0 +1,7 @@
+float32 target_g
+float32 epsilon_g
+float32 timeout_s
+---
+bool    ok
+float32 final_g
+string  detail

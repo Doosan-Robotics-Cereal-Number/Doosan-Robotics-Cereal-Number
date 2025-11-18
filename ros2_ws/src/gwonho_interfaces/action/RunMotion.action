@@ -1,0 +1,11 @@
+# Goal
+string name
+string params_json
+---
+# Result
+bool   success
+string detail
+---
+# Feedback
+float32 progress
+string  stage
