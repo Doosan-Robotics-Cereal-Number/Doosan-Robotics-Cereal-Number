@@ -26,8 +26,8 @@ class CerealOrderApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Pretendard',
       ),
-      home: const WelcomePage(),
       routes: {
+        '/': (context) => const WelcomePage(),
         '/cereal-selection': (context) => const CerealSelectionPage(),
         '/cup-selection': (context) => const CupSelectionPage(),
         '/quantity-selection': (context) => const QuantitySelectionPage(),

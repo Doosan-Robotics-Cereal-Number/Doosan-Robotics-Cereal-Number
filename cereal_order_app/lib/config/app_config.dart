@@ -18,7 +18,8 @@ class AppConfig {
   // ============================================
   
   //static const String ros2ServerUrl = 'ws://192.168.50.141:9090';  // 원격 연결용
-  static const String ros2ServerUrl = 'ws://localhost:9090';  // 로컬 테스트용 (같은 컴퓨터에서 rosbridge 실행 시)
+  //static const String ros2ServerUrl = 'ws://localhost:9090';  // 로컬 테스트용 (같은 컴퓨터에서 rosbridge 실행 시)
+  static const String ros2ServerUrl = 'ws://192.168.50.215:9090';  // 원격 연결용-음성
   
   // 🔥 로봇 상태 토픽 (로봇 → 앱)
   static const String ros2TopicName = '/robot_status';  // ✅ 수정!

@@ -18,3 +18,4 @@ class AppStrings {
   static const String menuSettings = '설정';
 }
 
+

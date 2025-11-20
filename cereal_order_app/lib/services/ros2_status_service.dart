@@ -327,11 +327,32 @@ class ROS2StatusService implements StatusService {
 
   /// 연결 해제
   void _disconnect() {
+    print('[ROS2] ========== WebSocket 연결 해제 시작 ==========');
     _reconnectTimer?.cancel();
+    print('[ROS2] 재연결 타이머 취소 완료');
+    
     _subscription?.cancel();
-    _channel?.sink.close(status.goingAway);
+    print('[ROS2] 구독 취소 완료');
+    
+    if (_channel != null) {
+      try {
+        print('[ROS2] WebSocket close 시도...');
+        // 1000은 normal closure code (유효한 코드)
+        _channel!.sink.close(status.normalClosure);
+        print('[ROS2] ✅ WebSocket close 성공');
+      } catch (e, stackTrace) {
+        print('[ROS2] ❌ WebSocket close 중 에러 발생: $e');
+        print('[ROS2] 스택 트레이스: $stackTrace');
+        // 에러가 발생해도 계속 진행
+      }
+      _channel = null;
+    } else {
+      print('[ROS2] WebSocket 채널이 이미 null입니다.');
+    }
+    
     _isConnected = false;
     _connectionStreamController.add(false);
+    print('[ROS2] ========== WebSocket 연결 해제 완료 ==========');
   }
 
   // ============================================
@@ -495,6 +516,60 @@ class ROS2StatusService implements StatusService {
       print('═══════════════════════════════════════════════════');
       print('');
     }
+  }
+
+  /// 음성 주문 취소 신호 전송 (ROS2 모드에서만 동작)
+  @override
+  Future<void> publishVoiceOrderCancel() async {
+    print('[ROS2] ========== 음성 주문 취소 신호 전송 시작 ==========');
+    print('[ROS2] 연결 상태: $_isConnected');
+    print('[ROS2] 채널 상태: ${_channel != null ? "존재함" : "없음"}');
+    
+    const topic = '/dsr01/kiosk/cancel_voice_order';
+    const topicType = 'std_msgs/String';
+    const message = 'cancel';
+    
+    if (_channel == null || !_isConnected) {
+      print('[ROS2] ❌ 연결되지 않음. 취소 신호 발행 불가');
+      print('[ROS2] ========== 음성 주문 취소 신호 전송 실패 (연결 없음) ==========');
+      return;
+    }
+    
+    try {
+      print('[ROS2] 토픽: $topic');
+      print('[ROS2] 메시지: "$message"');
+      
+      print('[ROS2] 토픽 광고 중: $topic');
+      await _advertiseTopic(topic, topicType);
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      print('[ROS2] 토픽 발행 중: $topic');
+      
+      bool success = await publishString(topic, message);
+      
+      if (success) {
+        print('');
+        print('═══════════════════════════════════════════════════');
+        print('[ROS2] ✅ 음성 주문 취소 신호 전송 성공!');
+        print('[ROS2] 토픽: $topic');
+        print('[ROS2] 메시지: "$message"');
+        print('═══════════════════════════════════════════════════');
+        print('');
+      } else {
+        print('');
+        print('═══════════════════════════════════════════════════');
+        print('[ROS2] ❌ 음성 주문 취소 신호 전송 실패');
+        print('[ROS2] 토픽: $topic');
+        print('[ROS2] 메시지: "$message"');
+        print('═══════════════════════════════════════════════════');
+        print('');
+      }
+    } catch (e, stackTrace) {
+      print('[ROS2] ❌ 음성 주문 취소 신호 전송 중 예외 발생: $e');
+      print('[ROS2] 스택 트레이스: $stackTrace');
+    }
+    
+    print('[ROS2] ========== 음성 주문 취소 신호 전송 종료 ==========');
   }
 
   /// 토픽 광고 (토픽을 발행할 것임을 rosbridge에 알림)

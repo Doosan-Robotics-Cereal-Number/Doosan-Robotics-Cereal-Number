@@ -17,7 +17,9 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
+    print('[WelcomePage] ========== initState 호출 ==========');
     _initializeService();
+    print('[WelcomePage] ✅ initState 완료');
   }
 
   /// 서비스 초기화
@@ -36,13 +38,31 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   void dispose() {
-    _statusService.stop();
-    _statusService.dispose();
+    print('[WelcomePage] ========== dispose() 호출 ==========');
+    try {
+      _statusService.stop();
+      print('[WelcomePage] ✅ statusService.stop() 완료');
+    } catch (e, stackTrace) {
+      print('[WelcomePage] ❌ statusService.stop() 중 에러: $e');
+      print('[WelcomePage] 스택 트레이스: $stackTrace');
+    }
+    
+    try {
+      _statusService.dispose();
+      print('[WelcomePage] ✅ statusService.dispose() 완료');
+    } catch (e, stackTrace) {
+      print('[WelcomePage] ❌ statusService.dispose() 중 에러: $e');
+      print('[WelcomePage] 스택 트레이스: $stackTrace');
+    }
+    
     super.dispose();
+    print('[WelcomePage] ✅ dispose() 완료');
   }
 
   @override
   Widget build(BuildContext context) {
+    print('[WelcomePage] ========== build() 호출 ==========');
+    print('[WelcomePage] context: $context');
     return Scaffold(
       body: Stack(
         children: [

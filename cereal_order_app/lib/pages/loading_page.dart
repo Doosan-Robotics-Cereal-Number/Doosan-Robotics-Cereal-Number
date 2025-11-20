@@ -67,22 +67,30 @@ class _LoadingPageState extends State<LoadingPage> {
       print('✅ [디버그] ROS2 연결 완료! 토픽 발행 시작');
     }
     
-    // route arguments에서 직접 가져오기
-    final OrderData? orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
+    // ⭐ props를 우선 사용하고, 없을 때만 route arguments 확인
+    OrderData? orderData = widget.orderData;
+    
+    // props에 없으면 route arguments에서 가져오기
+    if (orderData == null) {
+      final routeArgs = ModalRoute.of(context)?.settings.arguments;
+      // route arguments가 Map인지 OrderData인지 안전하게 확인
+      if (routeArgs is OrderData) {
+        orderData = routeArgs;
+        print('✅ [디버그] route arguments에서 OrderData 직접 추출');
+      } else if (routeArgs is Map<String, dynamic>) {
+        // Map인 경우 'orderData' 키에서 추출 (음성 주문 플로우)
+        orderData = routeArgs['orderData'] as OrderData?;
+        print('✅ [디버그] route arguments에서 Map의 orderData 키 추출');
+      } else {
+        print('⚠️ [디버그] route arguments 타입을 알 수 없음: ${routeArgs?.runtimeType}');
+      }
+    } else {
+      print('✅ [디버그] widget.orderData 사용');
+    }
     
     print('🔍 [디버그] orderData == null: ${orderData == null}');
     
     if (orderData == null) {
-      print('⚠️ [디버그] orderData가 null입니다. widget.orderData 확인...');
-      print('🔍 [디버그] widget.orderData == null: ${widget.orderData == null}');
-      
-      // widget.orderData도 확인
-      if (widget.orderData != null) {
-        print('✅ [디버그] widget.orderData를 사용합니다');
-        _publishOrderWithData(widget.orderData!);
-        return;
-      }
-      
       print('❌ [디버그] 주문 정보를 찾을 수 없습니다');
       return;
     }
@@ -164,9 +172,21 @@ class _LoadingPageState extends State<LoadingPage> {
     print('🔍 [LoadingPage] 주문 데이터 확인 시작');
     print('═══════════════════════════════════════════════════');
     
-    final routeData = ModalRoute.of(context)?.settings.arguments as OrderData?;
-    final widgetData = widget.orderData;
-    final orderData = routeData ?? widgetData;
+    // ⭐ props를 우선 사용하고, 없을 때만 route arguments 확인
+    OrderData? widgetData = widget.orderData;
+    OrderData? routeData;
+    
+    // route arguments에서 안전하게 가져오기
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    if (routeArgs is OrderData) {
+      routeData = routeArgs;
+    } else if (routeArgs is Map<String, dynamic>) {
+      // Map인 경우 'orderData' 키에서 추출 (음성 주문 플로우)
+      routeData = routeArgs['orderData'] as OrderData?;
+    }
+    
+    // 최종 데이터: widget.orderData 우선, 없으면 route arguments
+    final orderData = widgetData ?? routeData;
     
     print('📦 데이터 소스 확인:');
     print('   - routeData (arguments): ${routeData != null ? "✅ 있음" : "❌ 없음"}');
