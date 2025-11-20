@@ -110,15 +110,18 @@ class RealtimeVoiceOrderNode(Node):
 
     def cancel_voice_order_callback(self, msg):
         """음성 주문 취소 (뒤로가기 버튼)"""
-        if msg.data.strip().lower() != 'cancel':
+        cancel_msg = msg.data.strip().lower()
+
+        if cancel_msg != 'cancel':
             return
-        
-        self.get_logger().info('⬅️  Cancel voice order signal received')
+
+        self.get_logger().info('⬅️  Cancel voice order signal received from Flutter')
 
         if self.conversation_active:
             self.stop_flag.set()
-            self.publish_cancel('cancel')
             self.conversation_active = False
+            # 플러터에서 온 cancel이므로 토픽 발행 안함 (충돌 방지)
+            self.get_logger().info('🛑 Conversation stopped (Flutter back button)')
     
     def _run_conversation_thread(self):
         """비동기 대화 실행 (별도 스레드)"""
