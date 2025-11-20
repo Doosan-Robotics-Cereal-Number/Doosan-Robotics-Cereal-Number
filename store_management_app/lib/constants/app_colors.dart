@@ -25,3 +25,4 @@ class AppColors {
   static const Color info = Color(0xFF3B82F6);
 }
 
+
