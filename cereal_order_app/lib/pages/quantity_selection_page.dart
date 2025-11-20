@@ -29,9 +29,14 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
     // 이전 화면에서 전달받은 주문 데이터 가져오기
     orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
     
+    if (orderData == null) {
+      print('⚠️ [QuantitySelectionPage] orderData가 null입니다!');
+    }
+    
     // 첫 빌드에서 orderData가 있으면 기본값 설정
     if (orderData != null && orderData!.selectedQuantity == null) {
       orderData!.selectedQuantity = '보통';
+      print('[QuantitySelectionPage] 기본값 설정: 보통');
     }
     
     return SelectionPageLayout(
@@ -65,7 +70,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
               print('[QuantitySelectionPage] 많이 선택됨');
               setState(() {
                 selectedQuantity = '많이';
-                orderData?.selectedQuantity = '많이';
+                orderData!.selectedQuantity = '많이';
               });
             },
           ),
@@ -77,10 +82,10 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
             imagePath: 'assets/images/normal-cereal.png',
             isSelected: selectedQuantity == '보통',
             onTap: () {
-              print('[QuantitySelectionPage] 적당히 선택됨');
+              print('[QuantitySelectionPage] 적당히 선택됨 → 보통');
               setState(() {
                 selectedQuantity = '보통';
-                orderData?.selectedQuantity = '보통';
+                orderData!.selectedQuantity = '보통';
               });
             },
           ),
@@ -95,7 +100,7 @@ class _QuantitySelectionPageState extends State<QuantitySelectionPage> {
               print('[QuantitySelectionPage] 적게 선택됨');
               setState(() {
                 selectedQuantity = '적게';
-                orderData?.selectedQuantity = '적게';
+                orderData!.selectedQuantity = '적게';
               });
             },
           ),

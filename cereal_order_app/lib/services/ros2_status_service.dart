@@ -247,7 +247,7 @@ class ROS2StatusService implements StatusService {
           
           // "success: 'true'" 형식 체크 (또는 단순히 메시지가 왔으면 완료로 간주)
           if (msgData.contains('true') || msgData.isNotEmpty) {
-            print('[ROS2] ✅ 주문 완료 확인! 페이지 이동 트리거');
+            print('[ROS2] ✅ 주문 완료 확인! 5초 후 페이지 이동 트리거');
             _orderDoneStreamController.add(true);
           }
         }

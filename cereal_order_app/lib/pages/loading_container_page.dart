@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/order_data.dart';
 import '../services/status_service.dart';
 import '../services/status_service_factory.dart';
-import '../services/manual_status_service.dart';
 import '../services/monitoring_notifier.dart';
 import '../config/app_config.dart';
 import 'loading_page.dart';
@@ -29,7 +28,6 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
   // Monitoring App 알림 서비스
   final _monitoringNotifier = MonitoringNotifier();
   
-  bool _isConnected = false;
   String _serviceTypeName = '';
 
   @override
@@ -65,10 +63,6 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
     // 연결 상태 구독
     _connectionSubscription = _statusService.connectionStream.listen((connected) {
       if (mounted) {
-        setState(() {
-          _isConnected = connected;
-        });
-        
         if (AppConfig.showConnectionStatus) {
           if (connected) {
             _showSnackBar('✅ $_serviceTypeName 연결됨', Colors.green);
@@ -95,12 +89,19 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
     // 주문 완료 스트림 구독
     _orderDoneSubscription = _statusService.orderDoneStream.listen((done) {
       if (mounted && done) {
-        print('[LoadingContainerPage] 주문 완료! OrderCompletePage로 이동');
-        Navigator.pushNamed(
-          context,
-          '/order-complete',
-          arguments: orderData,
-        );
+        print('[LoadingContainerPage] 주문 완료 신호 수신! 5초 후 OrderCompletePage로 이동');
+        
+        // 5초 딜레이 후 화면 전환
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted) {
+            print('[LoadingContainerPage] 5초 경과! OrderCompletePage로 이동');
+            Navigator.pushNamed(
+              context,
+              '/order-complete',
+              arguments: orderData,
+            );
+          }
+        });
       }
     });
   }
@@ -155,15 +156,6 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
     );
   }
 
-  /// 수동으로 상태 변경 (수동 서비스일 때만 동작)
-  void _changeStatusManually(int newStatus) {
-    if (_statusService is ManualStatusService) {
-      (_statusService as ManualStatusService).setStatus(newStatus);
-    } else {
-      _showSnackBar('⚠️ 현재 $_serviceTypeName 모드에서는 수동 변경 불가', Colors.orange);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
@@ -198,86 +190,7 @@ class _LoadingContainerPageState extends State<LoadingContainerPage> {
         //     left: 20,
         //     child: _buildConnectionStatus(),
         //   ),
-        
-        // 테스트용 버튼 (디버그 모드에서만)
-        if (AppConfig.debugMode)
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: _buildDebugButtons(),
-          ),
       ],
-    );
-  }
-
-  /// 디버그 버튼들
-  Widget _buildDebugButtons() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildDebugButton(
-          label: '이슈\n발생',
-          color: Colors.red,
-          icon: Icons.warning,
-          onPressed: () => _changeStatusManually(1),
-          heroTag: 'issue1',
-        ),
-        const SizedBox(height: 10),
-        _buildDebugButton(
-          label: '정상\n복귀',
-          color: Colors.green,
-          icon: Icons.check,
-          onPressed: () => _changeStatusManually(0),
-          heroTag: 'issue0',
-        ),
-      ],
-    );
-  }
-
-  /// 디버그 버튼 위젯
-  Widget _buildDebugButton({
-    required String label,
-    required Color color,
-    required IconData icon,
-    required VoidCallback onPressed,
-    required String heroTag,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        heroTag: heroTag,
-        backgroundColor: color,
-        onPressed: onPressed,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 20, color: Colors.white),
-            const SizedBox(height: 2),
-            Text(
-              label.split('\n')[1],
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
-
-
-
-

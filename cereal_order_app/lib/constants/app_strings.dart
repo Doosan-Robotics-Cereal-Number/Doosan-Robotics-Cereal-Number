@@ -26,7 +26,7 @@ class AppStrings {
   
   // 시리얼 종류
   static const String cocoball = '코코볼';
-  static const String granola = '그래놀라';
+  static const String granola = '조리퐁';
   
   // 컵 종류
   static const String storeCup = '매장 컵';

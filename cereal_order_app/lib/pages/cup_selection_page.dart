@@ -29,9 +29,14 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
     // 이전 화면에서 전달받은 주문 데이터 가져오기
     orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
     
+    if (orderData == null) {
+      print('⚠️ [CupSelectionPage] orderData가 null입니다!');
+    }
+    
     // 첫 빌드에서 orderData가 있으면 기본값 설정
     if (orderData != null && orderData!.selectedCup == null) {
       orderData!.selectedCup = '매장컵';
+      print('[CupSelectionPage] 기본값 설정: 매장컵');
     }
     
     return SelectionPageLayout(
@@ -42,6 +47,10 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
       showAppBar: false,
       onConfirmPressed: () {
         print('[CupSelectionPage] 컵 선택하기 버튼 클릭됨');
+        print('📦 [CupSelectionPage] 전달할 주문 정보:');
+        print('   - 시리얼: ${orderData?.selectedCereal}');
+        print('   - 양: ${orderData?.selectedQuantity}');
+        print('   - 컵: ${orderData?.selectedCup}');
         Navigator.pushNamed(
           context,
           '/loading',
@@ -61,7 +70,7 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
               print('[CupSelectionPage] 매장 컵 선택됨');
               setState(() {
                 selectedCup = '매장컵';
-                orderData?.selectedCup = '매장컵';
+                orderData!.selectedCup = '매장컵';
               });
             },
             child: Column(
@@ -129,7 +138,7 @@ class _CupSelectionPageState extends State<CupSelectionPage> {
               print('[CupSelectionPage] 개인 컵 선택됨');
               setState(() {
                 selectedCup = '개인컵';
-                orderData?.selectedCup = '개인컵';
+                orderData!.selectedCup = '개인컵';
               });
             },
             child: Column(

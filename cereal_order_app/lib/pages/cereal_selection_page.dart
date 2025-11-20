@@ -10,18 +10,12 @@ class CerealSelectionPage extends StatefulWidget {
 }
 
 class _CerealSelectionPageState extends State<CerealSelectionPage> {
-  String? selectedCereal = 'start_sequence_a'; // 기본값으로 코코볼 선택
+  String? selectedCereal;
   OrderData? orderData;
 
   @override
   void initState() {
     super.initState();
-    // 다음 프레임에서 orderData 설정
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        orderData?.selectedCereal = 'start_sequence_a';
-      });
-    });
   }
 
   @override
@@ -29,9 +23,26 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
     // 이전 화면에서 전달받은 주문 데이터 가져오기
     orderData = ModalRoute.of(context)?.settings.arguments as OrderData?;
     
-    // 첫 빌드에서 orderData가 있으면 기본값 설정
-    if (orderData != null && orderData!.selectedCereal == null) {
-      orderData!.selectedCereal = 'start_sequence_a';
+    // ⭐ orderData가 null이면 새로 생성 (주문 흐름의 시작점)
+    if (orderData == null) {
+      orderData = OrderData();
+      print('[CerealSelectionPage] 새로운 OrderData 생성됨');
+    }
+    
+    // orderData의 selectedCereal과 로컬 selectedCereal 동기화
+    if (orderData!.selectedCereal != null) {
+      // orderData에 값이 있으면 그것을 사용
+      if (selectedCereal != orderData!.selectedCereal) {
+        selectedCereal = orderData!.selectedCereal;
+        print('[CerealSelectionPage] orderData에서 시리얼 값 동기화: $selectedCereal');
+      }
+    } else {
+      // orderData에 값이 없으면 기본값 설정 (코코볼)
+      if (selectedCereal == null) {
+        selectedCereal = 'start_sequence_a';
+        orderData!.selectedCereal = 'start_sequence_a';
+        print('[CerealSelectionPage] 기본값 설정: start_sequence_a (코코볼)');
+      }
     }
     
     return SelectionPageLayout(
@@ -42,6 +53,17 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
       showAppBar: false,
       onConfirmPressed: () {
         print('[CerealSelectionPage] 메뉴 선택하기 버튼 클릭됨');
+        print('📦 [CerealSelectionPage] 전달할 주문 정보:');
+        print('   - 시리얼: ${orderData?.selectedCereal}');
+        print('   - 양: ${orderData?.selectedQuantity}');
+        print('   - 컵: ${orderData?.selectedCup}');
+        
+        // 마지막으로 selectedCereal과 orderData 동기화 확인
+        if (selectedCereal != null && orderData != null) {
+          orderData!.selectedCereal = selectedCereal;
+          print('✅ [CerealSelectionPage] 최종 동기화: orderData.selectedCereal = $selectedCereal');
+        }
+        
         Navigator.pushNamed(
           context,
           '/quantity-selection',
@@ -58,10 +80,15 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
           // 코코볼 옵션
           GestureDetector(
             onTap: () {
-              print('[CerealSelectionPage] 코코볼 선택됨');
+              print('[CerealSelectionPage] 코코볼 선택됨 → start_sequence_a');
               setState(() {
                 selectedCereal = 'start_sequence_a';
-                orderData?.selectedCereal = 'start_sequence_a';
+                if (orderData != null) {
+                  orderData!.selectedCereal = 'start_sequence_a';
+                  print('✅ [CerealSelectionPage] orderData.selectedCereal 업데이트: ${orderData!.selectedCereal}');
+                } else {
+                  print('⚠️ [CerealSelectionPage] orderData가 null입니다!');
+                }
               });
             },
             child: Column(
@@ -123,19 +150,24 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
             ),
           ),
           const SizedBox(width: 60),
-          // 그래놀라 옵션
+          // 조리퐁 옵션
           GestureDetector(
             onTap: () {
-              print('[CerealSelectionPage] 그래놀라 선택됨');
+              print('[CerealSelectionPage] 조리퐁 선택됨 → start_sequence_b');
               setState(() {
                 selectedCereal = 'start_sequence_b';
-                orderData?.selectedCereal = 'start_sequence_b';
+                if (orderData != null) {
+                  orderData!.selectedCereal = 'start_sequence_b';
+                  print('✅ [CerealSelectionPage] orderData.selectedCereal 업데이트: ${orderData!.selectedCereal}');
+                } else {
+                  print('⚠️ [CerealSelectionPage] orderData가 null입니다!');
+                }
               });
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 시리얼 이미지 - 그래놀라
+                // 시리얼 이미지 - 조리퐁
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -180,7 +212,7 @@ class _CerealSelectionPageState extends State<CerealSelectionPage> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '그래놀라',
+                  '조리퐁',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
