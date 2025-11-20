@@ -45,6 +45,12 @@ abstract class StatusService {
     // 기본 구현: 아무것도 하지 않음
     print('[StatusService] publishVoiceOrderStart 기본 구현 (발행 안 함)');
   }
+
+  /// 음성 주문 취소 신호 전송 (ROS2 모드에서만 동작)
+  Future<void> publishVoiceOrderCancel() async {
+    // 기본 구현: 아무것도 하지 않음
+    print('[StatusService] publishVoiceOrderCancel 기본 구현 (발행 안 함)');
+  }
 }
 
 

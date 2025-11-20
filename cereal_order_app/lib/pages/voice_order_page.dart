@@ -79,11 +79,25 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
 
     // 주문 취소 스트림 구독
     _orderCancelSubscription = (_statusService as dynamic).orderCancelStream.listen((cancelReason) {
+      print('[VoiceOrderPage] ========== 음성 취소 신호 수신 ==========');
+      print('[VoiceOrderPage] 취소 이유: $cancelReason');
+      print('[VoiceOrderPage] mounted 상태: $mounted');
+      
       if (mounted) {
-        print('[VoiceOrderPage] 주문 취소 수신: $cancelReason');
-        // 초기 화면으로 복귀
-        Navigator.pop(context);
+        try {
+          print('[VoiceOrderPage] Navigator.pop() 실행 전...');
+          print('[VoiceOrderPage] context: $context');
+          Navigator.pop(context);
+          print('[VoiceOrderPage] ✅ Navigator.pop() 실행 완료');
+        } catch (e, stackTrace) {
+          print('[VoiceOrderPage] ❌ 음성 취소 처리 중 에러 발생: $e');
+          print('[VoiceOrderPage] 스택 트레이스: $stackTrace');
+        }
+      } else {
+        print('[VoiceOrderPage] ⚠️ mounted가 false입니다. Navigator.pop() 실행하지 않음');
       }
+      
+      print('[VoiceOrderPage] ========== 음성 취소 신호 처리 완료 ==========');
     });
   }
 
@@ -119,18 +133,53 @@ class _VoiceOrderPageState extends State<VoiceOrderPage> {
 
   @override
   void dispose() {
+    print('[VoiceOrderPage] ========== dispose() 호출 ==========');
     _orderInfoSubscription?.cancel();  // 주문 정보 구독 취소
+    print('[VoiceOrderPage] 주문 정보 구독 취소 완료');
     _orderCancelSubscription?.cancel();  // 주문 취소 구독 취소
+    print('[VoiceOrderPage] 주문 취소 구독 취소 완료');
     // statusService는 voice_order_loading_page에서 관리하므로 여기서는 정리하지 않음
     // _statusService.stop();
     // _statusService.dispose();
     super.dispose();
+    print('[VoiceOrderPage] ✅ dispose() 완료');
   }
 
   /// 뒤로가기 버튼 클릭
-  void _onBackPressed() {
-    print('[VoiceOrderPage] 뒤로가기 버튼 클릭됨');
-    Navigator.pop(context);
+  void _onBackPressed() async {
+    print('[VoiceOrderPage] ========== 뒤로가기 버튼 클릭 시작 ==========');
+    print('[VoiceOrderPage] mounted 상태: $mounted');
+    print('[VoiceOrderPage] 현재 Navigator 스택 확인...');
+    
+    // Navigator 스택 정보 로깅
+    try {
+      Navigator.of(context, rootNavigator: false);
+      print('[VoiceOrderPage] Navigator 상태: 존재함');
+    } catch (e) {
+      print('[VoiceOrderPage] Navigator 상태: 없음 ($e)');
+    }
+    
+    try {
+      // 음성 주문 취소 신호 발행
+      print('[VoiceOrderPage] 음성 주문 취소 신호 발행 시작...');
+      await _statusService.publishVoiceOrderCancel();
+      print('[VoiceOrderPage] ✅ 음성 주문 취소 신호 발행 완료');
+      
+      // 음성 취소와 동일한 로직: 이전 화면으로 복귀
+      if (mounted) {
+        print('[VoiceOrderPage] Navigator.pop() 실행 전...');
+        print('[VoiceOrderPage] context: $context');
+        Navigator.pop(context);
+        print('[VoiceOrderPage] ✅ Navigator.pop() 실행 완료');
+      } else {
+        print('[VoiceOrderPage] ⚠️ mounted가 false입니다. Navigator.pop() 실행하지 않음');
+      }
+    } catch (e, stackTrace) {
+      print('[VoiceOrderPage] ❌ 뒤로가기 처리 중 에러 발생: $e');
+      print('[VoiceOrderPage] 스택 트레이스: $stackTrace');
+    }
+    
+    print('[VoiceOrderPage] ========== 뒤로가기 버튼 클릭 종료 ==========');
   }
 
   /// 테스트용 랜덤 주문 처리

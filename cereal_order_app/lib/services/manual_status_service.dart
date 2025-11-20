@@ -93,6 +93,12 @@ class ManualStatusService implements StatusService {
   Future<void> publishVoiceOrderStart() async {
     print('[Manual] 음성 주문 시작 (로그만 출력)');
   }
+
+  /// 음성 주문 취소 신호 전송 (수동 모드에서는 로그만 출력)
+  @override
+  Future<void> publishVoiceOrderCancel() async {
+    print('[Manual] 음성 주문 취소 (로그만 출력)');
+  }
 }
 
 

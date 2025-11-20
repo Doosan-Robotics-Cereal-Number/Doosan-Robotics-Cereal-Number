@@ -110,11 +110,14 @@ class RealtimeVoiceOrderNode(Node):
 
     def cancel_voice_order_callback(self, msg):
         """음성 주문 취소 (뒤로가기 버튼)"""
+        if msg.data.strip().lower() != 'cancel':
+            return
+        
         self.get_logger().info('⬅️  Cancel voice order signal received')
 
         if self.conversation_active:
             self.stop_flag.set()
-            self.publish_cancel('back_button')
+            self.publish_cancel('cancel')
             self.conversation_active = False
     
     def _run_conversation_thread(self):
