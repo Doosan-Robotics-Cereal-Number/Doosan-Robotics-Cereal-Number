@@ -650,7 +650,9 @@ class GPTRealtimeClient:
                         event = self.event_queue.get_nowait()
 
                         if event["type"] == "text" and on_text:
-                            on_text(event["content"])
+                            # Delta 로그 주석 (한글자씩 출력 방지)
+                            # on_text(event["content"])
+                            pass
 
                         elif event["type"] == "text_complete" and on_text:
                             # 전체 누적 텍스트를 on_text에 전달 (JSON 파싱용)
