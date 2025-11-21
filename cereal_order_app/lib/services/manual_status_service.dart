@@ -7,6 +7,7 @@ class ManualStatusService implements StatusService {
   final _statusStreamController = StreamController<int>.broadcast();
   final _connectionStreamController = StreamController<bool>.broadcast();
   final _orderDoneStreamController = StreamController<bool>.broadcast();
+  final _voiceOrderReadyStreamController = StreamController<String>.broadcast();  // 음성 주문 준비 스트림
   
   int _currentStatus = 0;
   bool _isActive = false;
@@ -19,6 +20,9 @@ class ManualStatusService implements StatusService {
 
   @override
   Stream<bool> get orderDoneStream => _orderDoneStreamController.stream;
+
+  @override
+  Stream<String> get voiceOrderReadyStream => _voiceOrderReadyStreamController.stream;
 
   @override
   Future<void> start() async {
@@ -42,6 +46,7 @@ class ManualStatusService implements StatusService {
     _statusStreamController.close();
     _connectionStreamController.close();
     _orderDoneStreamController.close();
+    _voiceOrderReadyStreamController.close();  // 음성 주문 준비 스트림 닫기
   }
 
   @override

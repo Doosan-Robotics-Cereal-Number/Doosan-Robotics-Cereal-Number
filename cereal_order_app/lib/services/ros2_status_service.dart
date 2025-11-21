@@ -17,6 +17,7 @@ class ROS2StatusService implements StatusService {
   final _orderDoneStreamController = StreamController<bool>.broadcast();
   final _orderInfoStreamController = StreamController<Map<String, String>>.broadcast();  // 주문 정보 스트림
   final _orderCancelStreamController = StreamController<String>.broadcast();  // 주문 취소 스트림
+  final _voiceOrderReadyStreamController = StreamController<String>.broadcast();  // 음성 주문 준비 스트림
   
   // 설정값
   String _serverUrl;
@@ -52,6 +53,9 @@ class ROS2StatusService implements StatusService {
   /// 주문 취소 스트림 (취소 이유)
   Stream<String> get orderCancelStream => _orderCancelStreamController.stream;
 
+  /// 음성 주문 준비 스트림
+  Stream<String> get voiceOrderReadyStream => _voiceOrderReadyStreamController.stream;
+
   @override
   Future<void> start() async {
     print('[ROS2] WebSocket 연결 시작: $_serverUrl');
@@ -72,6 +76,7 @@ class ROS2StatusService implements StatusService {
     _orderDoneStreamController.close();
     _orderInfoStreamController.close();  // 주문 정보 스트림 닫기
     _orderCancelStreamController.close();  // 주문 취소 스트림 닫기
+    _voiceOrderReadyStreamController.close();  // 음성 주문 준비 스트림 닫기
   }
 
   @override
@@ -102,6 +107,7 @@ class ROS2StatusService implements StatusService {
       _subscribeToOrderDoneTopic();
       _subscribeToOrderTopic();  // 주문 정보 토픽 구독
       _subscribeToOrderCancelTopic();  // 주문 취소 토픽 구독
+      _subscribeToVoiceOrderReadyTopic();  // 음성 주문 준비 토픽 구독
 
       // 메시지 수신 리스닝
       _subscription = _channel!.stream.listen(
@@ -146,11 +152,11 @@ class ROS2StatusService implements StatusService {
     final subscribeMessage = jsonEncode({
       'op': 'subscribe',
       'topic': '/dsr01/kiosk/order_done',
-      'type': 'std_msgs/String',
+      'type': 'std_msgs/Bool',
     });
 
     _channel!.sink.add(subscribeMessage);
-    print('[ROS2] 주문 완료 토픽 구독: /dsr01/kiosk/order_done');
+    print('[ROS2] 주문 완료 토픽 구독: /dsr01/kiosk/order_done (std_msgs/Bool)');
   }
 
   /// 주문 정보 토픽 구독
@@ -179,6 +185,20 @@ class ROS2StatusService implements StatusService {
 
     _channel!.sink.add(subscribeMessage);
     print('[ROS2] 주문 취소 토픽 구독: /dsr01/kiosk/voice_order_cancel');
+  }
+
+  /// 음성 주문 준비 토픽 구독
+  void _subscribeToVoiceOrderReadyTopic() {
+    if (_channel == null || !_isConnected) return;
+
+    final subscribeMessage = jsonEncode({
+      'op': 'subscribe',
+      'topic': AppConfig.voiceOrderReadyTopicName,
+      'type': AppConfig.voiceOrderReadyTopicType,
+    });
+
+    _channel!.sink.add(subscribeMessage);
+    print('[ROS2] 음성 주문 준비 토픽 구독: ${AppConfig.voiceOrderReadyTopicName}');
   }
 
   /// 메시지 처리
@@ -241,13 +261,25 @@ class ROS2StatusService implements StatusService {
         }
         // 주문 완료 토픽 처리
         else if (data['topic'] == '/dsr01/kiosk/order_done') {
-          // std_msgs/String 타입
-          String msgData = data['msg']['data'] ?? '';
-          print('[ROS2] ✅ 주문 완료 수신: "$msgData"');
+          // std_msgs/Bool 타입 처리
+          dynamic msgData = data['msg']['data'];
+          bool isDone = false;
           
-          // "success: 'true'" 형식 체크 (또는 단순히 메시지가 왔으면 완료로 간주)
-          if (msgData.contains('true') || msgData.isNotEmpty) {
-            print('[ROS2] ✅ 주문 완료 확인! 5초 후 페이지 이동 트리거');
+          if (msgData is bool) {
+            // bool 타입인 경우 직접 사용
+            isDone = msgData;
+          } else if (msgData is String) {
+            // 하위 호환성: String 타입도 처리
+            isDone = msgData.toLowerCase() == 'true' || msgData == '1';
+          } else if (msgData != null) {
+            // 기타 타입 (int 등)
+            isDone = msgData == 1 || msgData == true;
+          }
+          
+          print('[ROS2] ✅ 주문 완료 수신: $isDone (타입: ${msgData.runtimeType})');
+          
+          if (isDone) {
+            print('[ROS2] ✅ 주문 완료 확인! OrderCompletePage로 이동');
             _orderDoneStreamController.add(true);
           }
         }
@@ -284,6 +316,15 @@ class ROS2StatusService implements StatusService {
 
           // 취소 이유를 스트림으로 전달
           _orderCancelStreamController.add(cancelReason);
+        }
+        
+        // 음성 주문 준비 토픽 처리
+        else if (data['topic'] == AppConfig.voiceOrderReadyTopicName) {
+          String readyMessage = data['msg']['data'] ?? '';
+          print('[ROS2] ✅ 음성 주문 준비 토픽 수신: "$readyMessage"');
+
+          // 준비 메시지를 스트림으로 전달
+          _voiceOrderReadyStreamController.add(readyMessage);
         }
       }
       

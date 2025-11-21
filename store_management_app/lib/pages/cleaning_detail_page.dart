@@ -116,28 +116,30 @@ class _CleaningDetailPageState extends State<CleaningDetailPage> {
 
                     const SizedBox(height: 40),
 
-                    // 이미지 (모서리 둥글게 12px)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        'assets/images/cup-1.png',
-                        width: double.infinity,
-                        height: 300,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: double.infinity,
-                            height: 300,
-                            color: Colors.grey[800],
-                            child: const Center(
-                              child: Icon(
-                                Icons.image,
-                                color: Colors.grey,
-                                size: 64,
+                    // 이미지 카드 (360*240, 모서리 둥글게 12px)
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/vla-sample.jpg',
+                          width: 360,
+                          height: 240,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 360,
+                              height: 240,
+                              color: Colors.grey[800],
+                              child: const Center(
+                                child: Icon(
+                                  Icons.image,
+                                  color: Colors.grey,
+                                  size: 64,
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
 

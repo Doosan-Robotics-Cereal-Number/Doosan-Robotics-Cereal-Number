@@ -12,6 +12,9 @@ abstract class StatusService {
   /// 주문 완료 스트림 (true: 완료)
   Stream<bool> get orderDoneStream;
   
+  /// 음성 주문 준비 스트림 (String: 메시지 내용)
+  Stream<String> get voiceOrderReadyStream;
+  
   /// 서비스 시작
   Future<void> start();
   
